@@ -1,0 +1,36 @@
+# Game progress files
+.game_progress
+.current_challenge
+.solved_*
+
+# Node modules for web challenges
+node_modules/
+web_app/node_modules/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Build artifacts
+*.o
+*.out
+*.exe
+challenges/binary/*.compiled
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+tmp/
+temp/
