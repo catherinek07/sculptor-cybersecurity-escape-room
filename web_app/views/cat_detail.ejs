@@ -1,0 +1,42 @@
+<%
+const body = `
+<h1>🐱 ${cat.name}</h1>
+
+<div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+    <p style="margin: 10px 0;"><strong>Breed:</strong> ${cat.breed}</p>
+    <p style="margin: 10px 0;"><strong>Description:</strong> ${cat.description}</p>
+    ${cat.name === 'Mittens' ? '<p style="color: red; font-weight: bold;">⚠️ MISSING! Please help find Mittens!</p>' : ''}
+</div>
+
+<h2 style="margin-top: 40px;">💬 Comments</h2>
+
+<div style="margin: 20px 0;">
+    ${comments.length === 0 ? '<p style="color: #666;">No comments yet. Be the first to comment!</p>' : ''}
+
+    ${comments.map(c => `
+        <div style="background: white; border-left: 4px solid #667eea; padding: 15px; margin: 15px 0; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            <p style="font-weight: bold; color: #667eea; margin-bottom: 5px;">${c.username}</p>
+            <!-- VULNERABLE: No XSS protection! -->
+            <p>${c.comment}</p>
+        </div>
+    `).join('')}
+</div>
+
+<h3 style="margin-top: 30px;">Post a Comment</h3>
+<form method="POST" action="/cat/${cat.id}/comment" style="margin: 20px 0;">
+    <textarea name="comment" required
+              style="width: 100%; height: 100px; padding: 10px; border: 2px solid #ddd; border-radius: 5px; font-size: 1em; font-family: inherit;"
+              placeholder="Write your comment here..."></textarea>
+    <button type="submit" style="margin-top: 10px; padding: 10px 30px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">
+        Post Comment
+    </button>
+</form>
+
+<div style="padding: 15px; background: #e7f3ff; border-radius: 5px; margin: 20px 0;">
+    <p><strong>💡 Try XSS here!</strong> The comments are not sanitized. Try injecting JavaScript!</p>
+</div>
+
+<p style="margin-top: 30px;"><a href="/cats">← Back to all cats</a></p>
+`;
+%>
+<%- include('layout', { body, user }) %>

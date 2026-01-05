@@ -1,0 +1,41 @@
+CAT CAFE STAFF SCHEDULE
+========================
+
+Week of January 1-7, 2024
+
+Monday:
+-------
+Morning (9am-3pm): Alice, Bob
+Evening (3pm-9pm): Charlie, Diana
+
+Tuesday:
+--------
+Morning: Bob, Charlie
+Evening: Alice, Diana
+
+Wednesday:
+----------
+Morning: Alice, Charlie
+Evening: Bob, Diana
+
+Thursday:
+---------
+Morning: Charlie, Diana
+Evening: Alice, Bob
+
+Friday:
+-------
+Morning: Alice, Bob
+Evening: Charlie, Diana
+
+Saturday:
+---------
+Morning: Bob, Diana
+Evening: Alice, Charlie
+
+Sunday:
+-------
+Morning: Charlie, Alice
+Evening: Bob, Diana
+
+Emergency Contact: Manager Tom - 555-BOSS (555-2677)

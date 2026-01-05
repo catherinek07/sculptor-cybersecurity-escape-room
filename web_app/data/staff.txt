@@ -1,0 +1,42 @@
+CAT CAFE STAFF DIRECTORY
+=========================
+
+Management:
+-----------
+Name: Tom Wilson
+Position: Manager
+Email: tom@catcafe.com
+Phone: 555-2677
+Notes: Loves Persian cats
+
+Staff:
+------
+Name: Alice Johnson
+Position: Barista
+Email: alice@catcafe.com
+Phone: 555-1234
+Favorite Cat: Whiskers
+
+Name: Bob Smith
+Position: Cat Handler
+Email: bob@catcafe.com
+Phone: 555-5678
+Favorite Cat: Shadow
+
+Name: Charlie Brown
+Position: Barista
+Email: charlie@catcafe.com
+Phone: 555-9012
+Favorite Cat: Luna
+
+Name: Diana Lee
+Position: Cat Handler
+Email: diana@catcafe.com
+Phone: 555-3456
+Favorite Cat: Tiger
+
+Emergency Procedures:
+---------------------
+1. In case of emergency, call 911
+2. Manager on duty: Check schedule
+3. Vet on call: Dr. Meowenstein - 555-VETS

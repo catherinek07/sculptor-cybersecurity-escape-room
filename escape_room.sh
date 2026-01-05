@@ -24,10 +24,10 @@ show_main_menu() {
     echo -e "${MAGENTA}╚════════════════════════════════════════════════╝${NC}"
     echo ""
     echo -e "  ${GREEN}1)${NC} 🔍 Forensics          ${CYAN}[AVAILABLE]${NC}"
-    echo -e "  ${GREEN}2)${NC} 🌐 Web Security       ${YELLOW}[COMING SOON]${NC}"
-    echo -e "  ${GREEN}3)${NC} 💣 Binary Exploitation ${YELLOW}[COMING SOON]${NC}"
-    echo -e "  ${GREEN}4)${NC} 🔐 Cryptography       ${YELLOW}[COMING SOON]${NC}"
-    echo -e "  ${GREEN}5)${NC} ⚙️  Reverse Engineering ${YELLOW}[COMING SOON]${NC}"
+    echo -e "  ${GREEN}2)${NC} 🌐 Web Security       ${CYAN}[AVAILABLE]${NC}"
+    echo -e "  ${GREEN}3)${NC} 💣 Binary Exploitation ${CYAN}[AVAILABLE]${NC}"
+    echo -e "  ${GREEN}4)${NC} 🔐 Cryptography       ${CYAN}[AVAILABLE]${NC}"
+    echo -e "  ${GREEN}5)${NC} ⚙️  Reverse Engineering ${CYAN}[AVAILABLE]${NC}"
     echo ""
     echo -e "  ${GREEN}r)${NC} Reset progress"
     echo -e "  ${GREEN}h)${NC} Help"
@@ -125,15 +125,124 @@ launch_forensics() {
     esac
 }
 
-# Coming soon message
-coming_soon() {
-    local category="$1"
+# Launch web security challenges
+launch_web() {
+    bash "$GAME_DIR/challenges/web/web_challenges.sh"
+}
+
+# Launch binary exploitation challenges
+launch_binary() {
     clear
     show_banner
-    show_cat
-    echo -e "${YELLOW}The $category challenges are coming soon!${NC}"
+    echo -e "${CYAN}Binary Exploitation Challenges${NC}"
     echo ""
-    echo -e "Stay tuned for more cat-themed security fun! 🐱"
+    echo -e "These challenges require compiling C programs."
+    echo -e "First, let's build the challenges..."
+    echo ""
+    echo -e "${YELLOW}Press Enter to continue...${NC}"
+    read
+
+    cd "$GAME_DIR/challenges/binary"
+
+    if ! command -v gcc &> /dev/null; then
+        echo -e "${RED}Error: GCC is not installed!${NC}"
+        echo -e "Please install: ${GREEN}sudo apt-get install gcc gcc-multilib${NC}"
+        echo ""
+        echo -e "${YELLOW}Press Enter to return...${NC}"
+        read
+        return
+    fi
+
+    if [ ! -f "challenge1" ]; then
+        echo -e "${CYAN}Building challenges...${NC}"
+        make
+        echo ""
+    fi
+
+    echo -e "${GREEN}Challenges built successfully!${NC}"
+    echo ""
+    echo -e "Available challenges:"
+    echo -e "  ${GREEN}1)${NC} Buffer Overflow - ./challenge1"
+    echo -e "  ${GREEN}2)${NC} Format String - ./challenge2"
+    echo -e "  ${GREEN}3)${NC} Shellcode Execution - ./challenge3"
+    echo -e "  ${GREEN}4)${NC} Return-to-Win - ./challenge4"
+    echo -e "  ${GREEN}5)${NC} Use-After-Free - ./challenge5"
+    echo ""
+    echo -e "Run them directly from: ${CYAN}challenges/binary/${NC}"
+    echo ""
+    echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
+    read
+}
+
+# Launch cryptography challenges
+launch_crypto() {
+    clear
+    show_banner
+    echo -e "${CYAN}Cryptography Challenges${NC}"
+    echo ""
+    echo -e "Choose a challenge:"
+    echo -e "  ${GREEN}1)${NC} Caesar Cipher"
+    echo -e "  ${GREEN}2)${NC} Hash Cracking"
+    echo -e "  ${GREEN}3)${NC} XOR Cipher"
+    echo -e "  ${GREEN}4)${NC} Weak RSA"
+    echo -e "  ${GREEN}5)${NC} Multi-Layer Base64"
+    echo -e "  ${GREEN}b)${NC} Back to main menu"
+    echo ""
+    read -p "> " choice
+
+    case "$choice" in
+        1) python3 "$GAME_DIR/challenges/crypto/challenge1_caesar.py" ;;
+        2) python3 "$GAME_DIR/challenges/crypto/challenge2_hash_crack.py" ;;
+        3) python3 "$GAME_DIR/challenges/crypto/challenge3_xor.py" ;;
+        4) python3 "$GAME_DIR/challenges/crypto/challenge4_weak_rsa.py" ;;
+        5) python3 "$GAME_DIR/challenges/crypto/challenge5_base64_layers.py" ;;
+        b|B) return ;;
+        *) echo -e "${RED}Invalid choice${NC}"; sleep 1; launch_crypto ;;
+    esac
+}
+
+# Launch reverse engineering challenges
+launch_reverse() {
+    clear
+    show_banner
+    echo -e "${CYAN}Reverse Engineering Challenges${NC}"
+    echo ""
+    echo -e "These challenges require analyzing compiled binaries."
+    echo -e "First, let's build them..."
+    echo ""
+    echo -e "${YELLOW}Press Enter to continue...${NC}"
+    read
+
+    cd "$GAME_DIR/challenges/reverse"
+
+    if ! command -v gcc &> /dev/null; then
+        echo -e "${RED}Error: GCC is not installed!${NC}"
+        echo -e "Please install: ${GREEN}sudo apt-get install gcc gcc-multilib${NC}"
+        echo ""
+        echo -e "${YELLOW}Press Enter to return...${NC}"
+        read
+        return
+    fi
+
+    if [ ! -f "challenge1" ]; then
+        echo -e "${CYAN}Building challenges...${NC}"
+        make
+        echo ""
+    fi
+
+    echo -e "${GREEN}Challenges built successfully!${NC}"
+    echo ""
+    echo -e "Available challenges:"
+    echo -e "  ${GREEN}1)${NC} Simple Keygen - ./challenge1"
+    echo -e "  ${GREEN}2)${NC} Password Checker - ./challenge2"
+    echo -e "  ${GREEN}3)${NC} Virtual Machine - ./challenge3"
+    echo ""
+    echo -e "Useful tools:"
+    echo -e "  • strings - Extract readable text"
+    echo -e "  • objdump -d - Disassemble"
+    echo -e "  • Ghidra - Full decompiler (download separately)"
+    echo ""
+    echo -e "Run them directly from: ${CYAN}challenges/reverse/${NC}"
     echo ""
     echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
     read
@@ -149,16 +258,16 @@ while true; do
             launch_forensics
             ;;
         2)
-            coming_soon "Web Security"
+            launch_web
             ;;
         3)
-            coming_soon "Binary Exploitation"
+            launch_binary
             ;;
         4)
-            coming_soon "Cryptography"
+            launch_crypto
             ;;
         5)
-            coming_soon "Reverse Engineering"
+            launch_reverse
             ;;
         r|R)
             reset_progress

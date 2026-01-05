@@ -1,0 +1,28 @@
+🐱 CAT CAFE MENU 🐱
+===================
+
+Beverages:
+----------
+☕ Coffee - $3.50
+🍵 Tea - $3.00
+🥤 Soda - $2.50
+🥛 Milk - $2.00
+
+Snacks:
+-------
+🍰 Cake - $4.50
+🍪 Cookies - $3.00
+🥪 Sandwich - $5.50
+
+Cat Treats:
+-----------
+🐟 Tuna Bites - $6.00
+🥩 Chicken Strips - $5.50
+🍗 Fish Flakes - $4.00
+
+Special:
+--------
+🎂 Cat Birthday Cake - $25.00
+
+Hours: 9am - 9pm, 7 days a week
+Phone: 555-MEOW (555-6369)

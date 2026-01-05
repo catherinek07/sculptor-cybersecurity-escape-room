@@ -1,0 +1,46 @@
+<%
+const body = `
+<h1>🔑 Login to Cat Cafe</h1>
+
+<div class="warning">
+    <strong>Challenge 1: SQL Injection</strong><br>
+    Can you bypass the login without knowing the password?
+</div>
+
+${error ? `<div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; margin: 20px 0;">${error}</div>` : ''}
+
+<form method="POST" action="/login" style="max-width: 400px; margin: 30px auto;">
+    <div style="margin-bottom: 20px;">
+        <label for="username" style="display: block; margin-bottom: 5px; font-weight: bold;">Username:</label>
+        <input type="text" id="username" name="username" required
+               style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 5px; font-size: 1em;">
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <label for="password" style="display: block; margin-bottom: 5px; font-weight: bold;">Password:</label>
+        <input type="password" id="password" name="password" required
+               style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 5px; font-size: 1em;">
+    </div>
+
+    <button type="submit" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 5px; font-size: 1.1em; cursor: pointer; font-weight: bold;">
+        Login
+    </button>
+</form>
+
+<div style="padding: 20px; background: #fff3cd; border-radius: 5px; margin: 30px auto; max-width: 600px;">
+    <h3>💡 SQL Injection Hints:</h3>
+    <ul style="margin-left: 20px; line-height: 1.8;">
+        <li>The SQL query looks like: <code>SELECT * FROM users WHERE username = '?' AND password = '?'</code></li>
+        <li>Try entering <code>' OR '1'='1</code> in the username field</li>
+        <li>You can also try: <code>admin' --</code> to comment out the password check</li>
+        <li>Goal: Login as admin without knowing the password!</li>
+    </ul>
+</div>
+
+<div style="text-align: center; margin: 20px;">
+    <p>Valid test accounts: alice/cat_lover, bob/kitten123</p>
+    <p style="margin-top: 10px;"><a href="/">← Back to Home</a></p>
+</div>
+`;
+%>
+<%- include('layout', { body, user }) %>

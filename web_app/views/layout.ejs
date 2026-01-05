@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐱 Cat Cafe - <%= typeof title !== 'undefined' ? title : 'Home' %></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        nav {
+            background: #333;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        nav a:hover {
+            background: #555;
+        }
+
+        .user-info {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-weight: bold;
+        }
+
+        main {
+            padding: 30px;
+            min-height: 400px;
+        }
+
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-size: 0.9em;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <% if (typeof user !== 'undefined' && user) { %>
+                <div class="user-info">Logged in as: <%= user %></div>
+            <% } %>
+            <h1>🐱 Cat Cafe Security System</h1>
+            <p>Welcome to the most vulnerable cat cafe on the internet!</p>
+        </header>
+
+        <nav>
+            <a href="/">🏠 Home</a>
+            <a href="/cats">🐈 View Cats</a>
+            <a href="/files">📁 Files</a>
+            <a href="/admin">👑 Admin</a>
+            <% if (typeof user !== 'undefined' && user) { %>
+                <a href="/logout">🚪 Logout</a>
+            <% } else { %>
+                <a href="/login">🔑 Login</a>
+            <% } %>
+        </nav>
+
+        <main>
+            <%- body %>
+        </main>
+
+        <footer>
+            <p>⚠️ This is an INTENTIONALLY VULNERABLE application for security training</p>
+            <p>🐾 Cat-astrophic Security © 2024 - DO NOT use in production!</p>
+        </footer>
+    </div>
+</body>
+</html>

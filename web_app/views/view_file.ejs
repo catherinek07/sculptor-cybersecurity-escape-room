@@ -1,0 +1,16 @@
+<%
+const body = `
+<h1>📄 File Viewer</h1>
+
+<div style="margin: 20px 0;">
+    <p><strong>Filename:</strong> ${filename}</p>
+</div>
+
+<div style="background: #f8f9fa; border: 2px solid #ddd; border-radius: 5px; padding: 20px; margin: 20px 0;">
+    <pre style="white-space: pre-wrap; word-wrap: break-word; font-family: 'Courier New', monospace;">${content}</pre>
+</div>
+
+<p style="margin-top: 30px;"><a href="/files">← Back to files</a></p>
+`;
+%>
+<%- include('layout', { body, user }) %>

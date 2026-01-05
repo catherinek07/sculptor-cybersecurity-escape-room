@@ -1,0 +1,32 @@
+<%
+const body = `
+<h1>🐈 Our Cats</h1>
+
+<div class="warning">
+    <strong>Challenge 2: Cross-Site Scripting (XSS)</strong><br>
+    Try posting comments with JavaScript to steal cookies or deface pages!
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 30px;">
+    ${cats.map(cat => `
+        <div style="border: 2px solid #ddd; border-radius: 10px; padding: 20px; background: #f8f9fa; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            <h2 style="color: #667eea; margin-bottom: 10px;">${cat.name}</h2>
+            <p style="color: #666; margin-bottom: 5px;"><strong>Breed:</strong> ${cat.breed}</p>
+            <p style="margin-bottom: 15px;">${cat.description}</p>
+            <a href="/cat/${cat.id}" style="display: inline-block; padding: 10px 20px; background: #667eea; color: white; text-decoration: none; border-radius: 5px;">View Profile →</a>
+        </div>
+    `).join('')}
+</div>
+
+<div style="padding: 20px; background: #fff3cd; border-radius: 5px; margin: 30px 0;">
+    <h3>💡 XSS Hints:</h3>
+    <ul style="margin-left: 20px; line-height: 1.8;">
+        <li>Click on a cat profile and try posting a comment</li>
+        <li>The application doesn't sanitize user input!</li>
+        <li>Try: <code>&lt;script&gt;alert('XSS')&lt;/script&gt;</code></li>
+        <li>Advanced: <code>&lt;img src=x onerror="alert(document.cookie)"&gt;</code></li>
+    </ul>
+</div>
+`;
+%>
+<%- include('layout', { body, user }) %>

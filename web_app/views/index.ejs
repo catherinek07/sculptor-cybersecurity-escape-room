@@ -1,0 +1,47 @@
+<%
+const body = `
+<h1>Welcome to Cat Cafe! 🐱</h1>
+
+<div class="warning">
+    <strong>⚠️ SECURITY TRAINING ENVIRONMENT</strong><br>
+    This web application contains intentional vulnerabilities for educational purposes.<br>
+    DO NOT deploy this to production or public servers!
+</div>
+
+<div style="margin: 30px 0; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+    <h2>🎯 Your Mission</h2>
+    <p>The cat cafe has been hacked! Help us find and exploit the vulnerabilities to recover the stolen data.</p>
+
+    <h3 style="margin-top: 20px;">Available Challenges:</h3>
+    <ul style="line-height: 2; margin: 20px;">
+        <li><strong>🔓 SQL Injection</strong> - Bypass the login system</li>
+        <li><strong>💉 Cross-Site Scripting (XSS)</strong> - Inject malicious scripts</li>
+        <li><strong>📂 Directory Traversal</strong> - Access restricted files</li>
+        <li><strong>🔐 Authentication Bypass</strong> - Access the admin panel</li>
+    </ul>
+
+    <h3 style="margin-top: 20px;">Getting Started:</h3>
+    <ol style="line-height: 2; margin: 20px;">
+        <li>Try logging in at the <a href="/login">Login Page</a></li>
+        <li>Explore the <a href="/cats">Cat Profiles</a></li>
+        <li>Check out the <a href="/files">File System</a></li>
+        <li>Attempt to access the <a href="/admin">Admin Panel</a></li>
+    </ol>
+</div>
+
+<div style="padding: 20px; background: #e7f3ff; border-left: 4px solid #2196F3; margin: 20px 0;">
+    <h3>💡 Hints:</h3>
+    <ul style="margin-left: 20px; line-height: 1.8;">
+        <li>SQL Injection: Try <code>' OR '1'='1</code> in the username field</li>
+        <li>XSS: Post a comment with <code>&lt;script&gt;alert('XSS')&lt;/script&gt;</code></li>
+        <li>Directory Traversal: Try <code>../</code> in file paths</li>
+        <li>Auth Bypass: Check your browser's cookies</li>
+    </ul>
+</div>
+
+<div style="text-align: center; margin: 30px 0;">
+    <p style="font-size: 1.2em;">Ready to start? <a href="/login" style="color: #667eea; font-weight: bold;">Go to Login →</a></p>
+</div>
+`;
+%>
+<%- include('layout', { body, user }) %>
