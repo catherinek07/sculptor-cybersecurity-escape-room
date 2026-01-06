@@ -2,6 +2,7 @@
 
 ## Getting Started in 30 Seconds
 
+### Option 1: Terminal-Based Escape Room
 ```bash
 # 1. Make the launcher executable (if not already)
 chmod +x escape_room.sh
@@ -9,6 +10,20 @@ chmod +x escape_room.sh
 # 2. Start playing!
 ./escape_room.sh
 ```
+
+### Option 2: 🆕 3D Escape Room (Recommended!)
+```bash
+# 1. Make the launcher executable
+chmod +x start_3d_escape_room.sh
+
+# 2. Launch the 3D experience!
+./start_3d_escape_room.sh
+
+# 3. Open your browser to http://localhost:3000
+# 4. Click "Enter the 3D Escape Room!"
+```
+
+The **3D Escape Room** offers an immersive first-person experience where you can walk around and interact with challenge terminals in a virtual cat cafe!
 
 ## What You'll Do
 

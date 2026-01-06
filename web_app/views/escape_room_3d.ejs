@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Cat Cafe Escape Room</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            background: #000;
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            cursor: pointer;
+        }
+
+        #hud {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #0f0;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border: 2px solid #0f0;
+            border-radius: 5px;
+            font-size: 14px;
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        #interaction-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #0f0;
+            border-radius: 10px;
+            padding: 30px;
+            color: #0f0;
+            display: none;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 2000;
+        }
+
+        #interaction-panel h2 {
+            color: #0ff;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        #interaction-panel input,
+        #interaction-panel textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background: #000;
+            border: 1px solid #0f0;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+        }
+
+        #interaction-panel button {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+
+        #interaction-panel button:hover {
+            background: #0ff;
+        }
+
+        .close-btn {
+            float: right;
+            cursor: pointer;
+            font-size: 24px;
+            color: #f00;
+        }
+
+        #crosshair {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        #crosshair::before,
+        #crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(0, 255, 0, 0.7);
+        }
+
+        #crosshair::before {
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            transform: translateY(-50%);
+        }
+
+        #crosshair::after {
+            left: 50%;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            transform: translateX(-50%);
+        }
+
+        #instructions {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #0f0;
+            padding: 10px 20px;
+            border: 2px solid #0f0;
+            border-radius: 5px;
+            text-align: center;
+            z-index: 1000;
+        }
+
+        .result-message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .success {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #0f0;
+        }
+
+        .error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #f00;
+            color: #f00;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+
+    <div id="hud">
+        <strong>🐱 CAT CAFE ESCAPE ROOM</strong><br>
+        <span id="room-name">Main Hall</span><br>
+        <span id="objective">Explore and find challenges!</span><br>
+        <br>
+        Flags Found: <span id="flag-count">0</span>/15
+    </div>
+
+    <div id="crosshair"></div>
+
+    <div id="instructions">
+        WASD: Move | Mouse: Look | E: Interact | ESC: Close Panel | Click to lock cursor
+    </div>
+
+    <div id="interaction-panel">
+        <span class="close-btn" onclick="closePanel()">&times;</span>
+        <div id="panel-content"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Game state
+        let scene, camera, renderer, controls;
+        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+        let velocity = new THREE.Vector3();
+        let direction = new THREE.Vector3();
+        let prevTime = performance.now();
+        let isLocked = false;
+        let interactables = [];
+        let flagsFound = new Set();
+
+        const euler = new THREE.Euler(0, 0, 0, 'YXZ');
+        const PI_2 = Math.PI / 2;
+
+        // Initialize
+        init();
+        animate();
+
+        function init() {
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x111111);
+            scene.fog = new THREE.Fog(0x111111, 0, 50);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 1.6, 0);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0x404040, 2);
+            scene.add(ambientLight);
+
+            const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+            pointLight.position.set(0, 10, 0);
+            scene.add(pointLight);
+
+            // Create the escape room
+            createEscapeRoom();
+
+            // Controls
+            setupControls();
+
+            // Window resize
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function createEscapeRoom() {
+            // Floor
+            const floorGeometry = new THREE.PlaneGeometry(60, 60);
+            const floorMaterial = new THREE.MeshStandardMaterial({
+                color: 0x222222,
+                roughness: 0.8
+            });
+            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+            floor.rotation.x = -Math.PI / 2;
+            floor.receiveShadow = true;
+            scene.add(floor);
+
+            // Ceiling
+            const ceiling = new THREE.Mesh(floorGeometry, floorMaterial);
+            ceiling.rotation.x = Math.PI / 2;
+            ceiling.position.y = 4;
+            scene.add(ceiling);
+
+            // Main room walls
+            createWall(-30, 2, 0, 60, 4, 0.5); // Left wall
+            createWall(30, 2, 0, 60, 4, 0.5);  // Right wall
+            createWall(0, 2, -30, 0.5, 4, 60); // Back wall
+            createWall(0, 2, 30, 0.5, 4, 60);  // Front wall
+
+            // Create different challenge areas
+            createWebChallengeArea();
+            createCryptoArea();
+            createBinaryArea();
+            createReverseArea();
+            createForensicsArea();
+
+            // Add some cat decorations
+            addCatDecorations();
+        }
+
+        function createWall(x, y, z, width, height, depth) {
+            const geometry = new THREE.BoxGeometry(width, height, depth);
+            const material = new THREE.MeshStandardMaterial({ color: 0x333333 });
+            const wall = new THREE.Mesh(geometry, material);
+            wall.position.set(x, y, z);
+            wall.receiveShadow = true;
+            wall.castShadow = true;
+            scene.add(wall);
+        }
+
+        function createTerminal(x, y, z, color, label, challengeType, challengeId) {
+            // Terminal screen
+            const screenGeometry = new THREE.BoxGeometry(2, 1.5, 0.1);
+            const screenMaterial = new THREE.MeshStandardMaterial({
+                color: color,
+                emissive: color,
+                emissiveIntensity: 0.5
+            });
+            const screen = new THREE.Mesh(screenGeometry, screenMaterial);
+            screen.position.set(x, y, z);
+
+            // Add text label
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 512;
+            canvas.height = 256;
+            context.fillStyle = '#000';
+            context.fillRect(0, 0, 512, 256);
+            context.fillStyle = '#0f0';
+            context.font = 'bold 40px Courier New';
+            context.textAlign = 'center';
+            context.fillText(label, 256, 128);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const labelMaterial = new THREE.MeshBasicMaterial({ map: texture });
+            const labelGeometry = new THREE.PlaneGeometry(1.8, 0.9);
+            const labelMesh = new THREE.Mesh(labelGeometry, labelMaterial);
+            labelMesh.position.set(x, y, z + 0.06);
+            scene.add(labelMesh);
+
+            screen.userData = {
+                interactable: true,
+                challengeType: challengeType,
+                challengeId: challengeId,
+                label: label
+            };
+
+            interactables.push(screen);
+            scene.add(screen);
+
+            // Stand
+            const standGeometry = new THREE.CylinderGeometry(0.1, 0.2, 1.5, 8);
+            const standMaterial = new THREE.MeshStandardMaterial({ color: 0x555555 });
+            const stand = new THREE.Mesh(standGeometry, standMaterial);
+            stand.position.set(x, y - 1.2, z);
+            scene.add(stand);
+        }
+
+        function createWebChallengeArea() {
+            // Web challenges section (left side)
+            createTerminal(-20, 2, -20, 0x00ff00, 'SQL INJECTION', 'web', 'sql');
+            createTerminal(-20, 2, -15, 0x00ff00, 'XSS ATTACK', 'web', 'xss');
+            createTerminal(-20, 2, -10, 0x00ff00, 'DIR TRAVERSAL', 'web', 'traversal');
+            createTerminal(-20, 2, -5, 0x00ff00, 'AUTH BYPASS', 'web', 'auth');
+            createTerminal(-20, 2, 0, 0x00ff00, 'CAT DATABASE', 'web', 'cats');
+        }
+
+        function createCryptoArea() {
+            // Crypto challenges (back right)
+            createTerminal(20, 2, -20, 0xff00ff, 'CAESAR CIPHER', 'crypto', 'caesar');
+            createTerminal(20, 2, -15, 0xff00ff, 'HASH CRACK', 'crypto', 'hash');
+            createTerminal(20, 2, -10, 0xff00ff, 'XOR DECRYPT', 'crypto', 'xor');
+            createTerminal(20, 2, -5, 0xff00ff, 'WEAK RSA', 'crypto', 'rsa');
+            createTerminal(20, 2, 0, 0xff00ff, 'BASE64 LAYERS', 'crypto', 'base64');
+        }
+
+        function createBinaryArea() {
+            // Binary exploitation (front left)
+            createTerminal(-20, 2, 10, 0xff0000, 'BUFFER OVERFLOW', 'binary', 'buffer');
+            createTerminal(-20, 2, 15, 0xff0000, 'FORMAT STRING', 'binary', 'format');
+            createTerminal(-20, 2, 20, 0xff0000, 'SHELLCODE', 'binary', 'shellcode');
+        }
+
+        function createReverseArea() {
+            // Reverse engineering (front right)
+            createTerminal(20, 2, 10, 0x00ffff, 'KEYGEN', 'reverse', 'keygen');
+            createTerminal(20, 2, 15, 0x00ffff, 'PASSWORD CHECK', 'reverse', 'password');
+        }
+
+        function createForensicsArea() {
+            // Forensics (center)
+            createTerminal(0, 2, -10, 0xffff00, 'CAT PHOTOS', 'forensics', 'photos');
+        }
+
+        function addCatDecorations() {
+            // Add some cat-themed objects
+            for (let i = 0; i < 10; i++) {
+                const catGeometry = new THREE.SphereGeometry(0.3, 8, 8);
+                const catMaterial = new THREE.MeshStandardMaterial({
+                    color: Math.random() * 0xffffff
+                });
+                const cat = new THREE.Mesh(catGeometry, catMaterial);
+                cat.position.set(
+                    Math.random() * 40 - 20,
+                    0.3,
+                    Math.random() * 40 - 20
+                );
+                scene.add(cat);
+            }
+        }
+
+        function setupControls() {
+            document.addEventListener('keydown', onKeyDown);
+            document.addEventListener('keyup', onKeyUp);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('click', () => {
+                if (!isLocked) {
+                    renderer.domElement.requestPointerLock();
+                }
+            });
+
+            document.addEventListener('pointerlockchange', () => {
+                isLocked = document.pointerLockElement === renderer.domElement;
+            });
+
+            // Interaction key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'e' || e.key === 'E') {
+                    checkInteraction();
+                } else if (e.key === 'Escape') {
+                    closePanel();
+                }
+            });
+        }
+
+        function onKeyDown(event) {
+            switch (event.code) {
+                case 'KeyW': moveForward = true; break;
+                case 'KeyS': moveBackward = true; break;
+                case 'KeyA': moveLeft = true; break;
+                case 'KeyD': moveRight = true; break;
+            }
+        }
+
+        function onKeyUp(event) {
+            switch (event.code) {
+                case 'KeyW': moveForward = false; break;
+                case 'KeyS': moveBackward = false; break;
+                case 'KeyA': moveLeft = false; break;
+                case 'KeyD': moveRight = false; break;
+            }
+        }
+
+        function onMouseMove(event) {
+            if (!isLocked) return;
+
+            const movementX = event.movementX || 0;
+            const movementY = event.movementY || 0;
+
+            euler.setFromQuaternion(camera.quaternion);
+            euler.y -= movementX * 0.002;
+            euler.x -= movementY * 0.002;
+            euler.x = Math.max(-PI_2, Math.min(PI_2, euler.x));
+            camera.quaternion.setFromEuler(euler);
+        }
+
+        function checkInteraction() {
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+
+            const intersects = raycaster.intersectObjects(interactables);
+
+            if (intersects.length > 0 && intersects[0].distance < 5) {
+                const object = intersects[0].object;
+                if (object.userData.interactable) {
+                    openChallenge(object.userData);
+                }
+            }
+        }
+
+        function openChallenge(data) {
+            const panel = document.getElementById('interaction-panel');
+            const content = document.getElementById('panel-content');
+
+            content.innerHTML = getChallengeContent(data);
+            panel.style.display = 'block';
+
+            document.getElementById('room-name').textContent = data.label;
+        }
+
+        function getChallengeContent(data) {
+            const challenges = {
+                sql: `
+                    <h2>🐱 SQL Injection Challenge</h2>
+                    <p>The cat cafe login system has a vulnerability. Can you bypass the authentication?</p>
+                    <p><strong>Target:</strong> Login as 'admin'</p>
+                    <form onsubmit="submitWebChallenge(event, 'sql')">
+                        <input type="text" id="sql-username" placeholder="Username" required>
+                        <input type="text" id="sql-password" placeholder="Password" required>
+                        <button type="submit">Login</button>
+                    </form>
+                    <div id="sql-result"></div>
+                `,
+                xss: `
+                    <h2>🐱 XSS Challenge</h2>
+                    <p>Post a comment that executes JavaScript. Get the admin's cookie!</p>
+                    <form onsubmit="submitWebChallenge(event, 'xss')">
+                        <textarea id="xss-comment" placeholder="Your comment..." rows="4" required></textarea>
+                        <button type="submit">Post Comment</button>
+                    </form>
+                    <div id="xss-result"></div>
+                `,
+                traversal: `
+                    <h2>🐱 Directory Traversal</h2>
+                    <p>The file viewer has a path traversal vulnerability. Find the secret file!</p>
+                    <form onsubmit="submitWebChallenge(event, 'traversal')">
+                        <input type="text" id="traversal-path" placeholder="File path (e.g., ../secret.txt)" required>
+                        <button type="submit">View File</button>
+                    </form>
+                    <div id="traversal-result"></div>
+                `,
+                auth: `
+                    <h2>🐱 Auth Bypass</h2>
+                    <p>The admin panel checks cookies. Can you forge an admin session?</p>
+                    <form onsubmit="submitWebChallenge(event, 'auth')">
+                        <input type="text" id="auth-cookie" placeholder="Cookie value" required>
+                        <button type="submit">Access Admin</button>
+                    </form>
+                    <div id="auth-result"></div>
+                `,
+                cats: `
+                    <h2>🐱 Cat Database</h2>
+                    <p>Browse the cat database and find hidden information!</p>
+                    <button onclick="window.open('/cats', '_blank')">Open Cat Database</button>
+                    <p style="margin-top: 15px; color: #ff0;">Hint: Look for secret locations...</p>
+                `,
+                caesar: `
+                    <h2>🔐 Caesar Cipher</h2>
+                    <p>Encrypted message: <code>Wkh fdw klghv wkh nh|</code></p>
+                    <form onsubmit="submitCryptoChallenge(event, 'caesar')">
+                        <input type="text" id="caesar-answer" placeholder="Decrypted message" required>
+                        <button type="submit">Submit</button>
+                    </form>
+                    <div id="caesar-result"></div>
+                `,
+                hash: `
+                    <h2>🔐 Hash Cracking</h2>
+                    <p>Hash: <code>5f4dcc3b5aa765d61d8327deb882cf99</code></p>
+                    <p>This is an MD5 hash. What's the original password?</p>
+                    <form onsubmit="submitCryptoChallenge(event, 'hash')">
+                        <input type="text" id="hash-answer" placeholder="Original password" required>
+                        <button type="submit">Submit</button>
+                    </form>
+                    <div id="hash-result"></div>
+                `,
+                xor: `
+                    <h2>🔐 XOR Decryption</h2>
+                    <p>Encrypted (hex): <code>1a1b1c1d1e1f</code></p>
+                    <p>Key is a single byte. Find it and decrypt!</p>
+                    <form onsubmit="submitCryptoChallenge(event, 'xor')">
+                        <input type="text" id="xor-answer" placeholder="Decrypted message" required>
+                        <button type="submit">Submit</button>
+                    </form>
+                    <div id="xor-result"></div>
+                `,
+                rsa: `
+                    <h2>🔐 Weak RSA</h2>
+                    <p>n = 143, e = 7, c = 42</p>
+                    <p>The modulus is small. Factor it and decrypt!</p>
+                    <form onsubmit="submitCryptoChallenge(event, 'rsa')">
+                        <input type="number" id="rsa-answer" placeholder="Decrypted number" required>
+                        <button type="submit">Submit</button>
+                    </form>
+                    <div id="rsa-result"></div>
+                `,
+                base64: `
+                    <h2>🔐 Base64 Layers</h2>
+                    <p>Decode multiple layers: <code>Vm0wd2QyUXlVWGxWV0d4V1YwZDRWMVl3WkRSV01WbDNXa1JTVjAxV2JETlhhMUpUVmpBeFYySkVUbGhoTVVwVVZtcEJlRll5U2tWVQpiR2hvVFZWd1ZWWnRjRWRpYlZaSFdrVmFTMkpHU2xsWmJGWmhZMVpXY1ZOdFJtcE5WbkJZVmxjeGIxSkdXbFZpUjBacFUwVktSbFpYZUc5aQpNa1pIVld4YVRtSllRbUZXYlhCS1RWWnNWbFpzVWxwbGEzQklWbTAxVDJGV1NuUlZiR1JYVWpOb2RsWnFRbUZrUjA1R1UyeE9hbEpYCmVGaFVWM2hYWWtac05sSnNhR2hUUlVwWVdXeG9iMWRHV2xWaVJtaFdUVlp3V0ZaWE5VOGsKCg==</code></p>
+                    <form onsubmit="submitCryptoChallenge(event, 'base64')">
+                        <input type="text" id="base64-answer" placeholder="Final decoded message" required>
+                        <button type="submit">Submit</button>
+                    </form>
+                    <div id="base64-result"></div>
+                `,
+                buffer: `
+                    <h2>💥 Buffer Overflow</h2>
+                    <p>Find the buffer overflow in the binary and exploit it!</p>
+                    <p><code>./challenges/binary/challenge1</code></p>
+                    <form onsubmit="submitBinaryChallenge(event, 'buffer')">
+                        <input type="text" id="buffer-flag" placeholder="Enter flag" required>
+                        <button type="submit">Submit Flag</button>
+                    </form>
+                    <div id="buffer-result"></div>
+                `,
+                format: `
+                    <h2>💥 Format String</h2>
+                    <p>Exploit the format string vulnerability!</p>
+                    <p><code>./challenges/binary/challenge2</code></p>
+                    <form onsubmit="submitBinaryChallenge(event, 'format')">
+                        <input type="text" id="format-flag" placeholder="Enter flag" required>
+                        <button type="submit">Submit Flag</button>
+                    </form>
+                    <div id="format-result"></div>
+                `,
+                shellcode: `
+                    <h2>💥 Shellcode Injection</h2>
+                    <p>Inject and execute shellcode!</p>
+                    <p><code>./challenges/binary/challenge3</code></p>
+                    <form onsubmit="submitBinaryChallenge(event, 'shellcode')">
+                        <input type="text" id="shellcode-flag" placeholder="Enter flag" required>
+                        <button type="submit">Submit Flag</button>
+                    </form>
+                    <div id="shellcode-result"></div>
+                `,
+                keygen: `
+                    <h2>🔓 Keygen Challenge</h2>
+                    <p>Reverse engineer the key generation algorithm!</p>
+                    <p><code>./challenges/reverse/challenge1</code></p>
+                    <form onsubmit="submitReverseChallenge(event, 'keygen')">
+                        <input type="text" id="keygen-key" placeholder="Valid key" required>
+                        <button type="submit">Verify Key</button>
+                    </form>
+                    <div id="keygen-result"></div>
+                `,
+                password: `
+                    <h2>🔓 Password Check</h2>
+                    <p>Find the correct password by reversing the binary!</p>
+                    <p><code>./challenges/reverse/challenge2</code></p>
+                    <form onsubmit="submitReverseChallenge(event, 'password')">
+                        <input type="text" id="password-answer" placeholder="Password" required>
+                        <button type="submit">Check Password</button>
+                    </form>
+                    <div id="password-result"></div>
+                `,
+                photos: `
+                    <h2>📷 Cat Photo Forensics</h2>
+                    <p>Analyze the cat photos for hidden data!</p>
+                    <p>Check the forensics challenges directory...</p>
+                    <form onsubmit="submitForensicsChallenge(event, 'photos')">
+                        <input type="text" id="forensics-flag" placeholder="Enter flag" required>
+                        <button type="submit">Submit Flag</button>
+                    </form>
+                    <div id="forensics-result"></div>
+                `
+            };
+
+            return challenges[data.challengeId] || '<p>Challenge not found!</p>';
+        }
+
+        function submitWebChallenge(event, type) {
+            event.preventDefault();
+            let result;
+
+            switch(type) {
+                case 'sql':
+                    const username = document.getElementById('sql-username').value;
+                    const password = document.getElementById('sql-password').value;
+                    if (username.includes("'") || username.toLowerCase().includes('or')) {
+                        result = showSuccess('sql', 'FLAG{sql_1nj3ct10n_m4st3r}');
+                    } else {
+                        result = showError('sql', 'Invalid credentials. Try SQL injection!');
+                    }
+                    break;
+                case 'xss':
+                    const comment = document.getElementById('xss-comment').value;
+                    if (comment.includes('<script>') || comment.includes('onerror')) {
+                        result = showSuccess('xss', 'FLAG{xss_4tt4ck_succ3ss}');
+                    } else {
+                        result = showError('xss', 'Try injecting JavaScript!');
+                    }
+                    break;
+                case 'traversal':
+                    const path = document.getElementById('traversal-path').value;
+                    if (path.includes('..') || path.includes('secret')) {
+                        result = showSuccess('traversal', 'FLAG{tr4v3rs4l_m4st3r}');
+                    } else {
+                        result = showError('traversal', 'Try path traversal!');
+                    }
+                    break;
+                case 'auth':
+                    const cookie = document.getElementById('auth-cookie').value;
+                    if (cookie.toLowerCase().includes('admin')) {
+                        result = showSuccess('auth', 'FLAG{4uth_byp4ss3d}');
+                    } else {
+                        result = showError('auth', 'Try forging an admin cookie!');
+                    }
+                    break;
+            }
+
+            document.getElementById(type + '-result').innerHTML = result;
+        }
+
+        function submitCryptoChallenge(event, type) {
+            event.preventDefault();
+            let result;
+            const answers = {
+                'caesar': 'the cat hides the key',
+                'hash': 'password',
+                'xor': 'meowmeow',
+                'rsa': '2',
+                'base64': 'cats'
+            };
+
+            const input = document.getElementById(type + '-answer').value.toLowerCase();
+            if (input === answers[type] || input.includes(answers[type])) {
+                result = showSuccess(type, `FLAG{cry9t0_${type}_s0lv3d}`);
+            } else {
+                result = showError(type, 'Incorrect! Try again.');
+            }
+
+            document.getElementById(type + '-result').innerHTML = result;
+        }
+
+        function submitBinaryChallenge(event, type) {
+            event.preventDefault();
+            const input = document.getElementById(type + '-flag').value;
+            if (input.includes('FLAG{')) {
+                showSuccess(type, 'Flag accepted!');
+            } else {
+                showError(type, 'Incorrect flag!');
+            }
+            document.getElementById(type + '-result').innerHTML =
+                input.includes('FLAG{') ? showSuccess(type, 'Correct!') : showError(type, 'Try harder!');
+        }
+
+        function submitReverseChallenge(event, type) {
+            event.preventDefault();
+            const answers = {
+                'keygen': 'CAT-',
+                'password': 'meow'
+            };
+            const inputId = type === 'keygen' ? 'keygen-key' : 'password-answer';
+            const input = document.getElementById(inputId).value;
+
+            if (input.includes(answers[type])) {
+                document.getElementById(type + '-result').innerHTML =
+                    showSuccess(type, `FLAG{r3v3rs3_${type}_cr4ck3d}`);
+            } else {
+                document.getElementById(type + '-result').innerHTML =
+                    showError(type, 'Incorrect! Keep reversing!');
+            }
+        }
+
+        function submitForensicsChallenge(event, type) {
+            event.preventDefault();
+            const input = document.getElementById('forensics-flag').value;
+            document.getElementById('forensics-result').innerHTML =
+                input.includes('FLAG{') ? showSuccess(type, 'Correct!') : showError(type, 'Not quite!');
+        }
+
+        function showSuccess(type, flag) {
+            flagsFound.add(type);
+            document.getElementById('flag-count').textContent = flagsFound.size;
+            return `<div class="result-message success">✓ ${flag}</div>`;
+        }
+
+        function showError(type, message) {
+            return `<div class="result-message error">✗ ${message}</div>`;
+        }
+
+        function closePanel() {
+            document.getElementById('interaction-panel').style.display = 'none';
+            document.getElementById('room-name').textContent = 'Main Hall';
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const time = performance.now();
+            const delta = (time - prevTime) / 1000;
+
+            velocity.x -= velocity.x * 10.0 * delta;
+            velocity.z -= velocity.z * 10.0 * delta;
+
+            direction.z = Number(moveForward) - Number(moveBackward);
+            direction.x = Number(moveRight) - Number(moveLeft);
+            direction.normalize();
+
+            if (moveForward || moveBackward) velocity.z -= direction.z * 30.0 * delta;
+            if (moveLeft || moveRight) velocity.x -= direction.x * 30.0 * delta;
+
+            const forward = new THREE.Vector3();
+            camera.getWorldDirection(forward);
+            forward.y = 0;
+            forward.normalize();
+
+            const right = new THREE.Vector3();
+            right.crossVectors(forward, camera.up);
+
+            camera.position.addScaledVector(forward, -velocity.z * delta);
+            camera.position.addScaledVector(right, -velocity.x * delta);
+
+            // Keep player in bounds
+            camera.position.x = Math.max(-28, Math.min(28, camera.position.x));
+            camera.position.z = Math.max(-28, Math.min(28, camera.position.z));
+            camera.position.y = 1.6;
+
+            prevTime = time;
+
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>

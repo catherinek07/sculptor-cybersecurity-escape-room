@@ -6,6 +6,9 @@ Welcome to **Cat-astrophic Security**, a comprehensive cat-themed cybersecurity 
 
 The local cat cafe's security system has been hacked by the infamous hacker group "The Scratching Post". You must solve a series of cybersecurity challenges across five different categories to rescue Mittens and save the cats!
 
+### 🆕 Play in 3D!
+Experience the challenges in an **immersive 3D first-person escape room**! Navigate through a virtual cat cafe, interact with challenge terminals, and solve puzzles in a fully 3D environment. See [3D_ESCAPE_ROOM_README.md](3D_ESCAPE_ROOM_README.md) for details.
+
 ## 📚 Challenge Categories
 
 ### ✅ 🔍 **Forensics** (5 Challenges - Terminal Based)

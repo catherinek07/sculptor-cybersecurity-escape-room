@@ -73,6 +73,11 @@ app.get('/', (req, res) => {
     res.render('index', { user: req.cookies.user });
 });
 
+// 3D Escape Room
+app.get('/escape-room-3d', (req, res) => {
+    res.render('escape_room_3d');
+});
+
 // Challenge 1: SQL Injection - Login
 app.get('/login', (req, res) => {
     res.render('login', { error: null, user: req.cookies.user });
