@@ -75,7 +75,7 @@ app.get('/', (req, res) => {
 
 // Challenge 1: SQL Injection - Login
 app.get('/login', (req, res) => {
-    res.render('login', { error: null });
+    res.render('login', { error: null, user: req.cookies.user });
 });
 
 // VULNERABLE: SQL Injection
