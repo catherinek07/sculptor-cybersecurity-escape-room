@@ -2,8 +2,23 @@
 # Compiles vulnerable binaries for educational purposes
 
 CC = gcc
-CFLAGS = -m32 -fno-stack-protector -z execstack -no-pie -g
 ARCH_CHECK = $(shell uname -m)
+OS_CHECK = $(shell uname -s)
+
+# Detect architecture and OS to set appropriate flags
+ifeq ($(OS_CHECK),Darwin)
+    # macOS (both Intel and Apple Silicon)
+    ifeq ($(ARCH_CHECK),arm64)
+        # Apple Silicon - compile for native ARM64
+        CFLAGS = -fno-stack-protector -g -Wno-deprecated-declarations
+    else
+        # Intel Mac
+        CFLAGS = -fno-stack-protector -g -Wno-deprecated-declarations
+    endif
+else
+    # Linux - try to compile 32-bit for traditional binary exploitation
+    CFLAGS = -m32 -fno-stack-protector -z execstack -no-pie -g
+endif
 
 .PHONY: all clean check-arch
 
@@ -11,12 +26,15 @@ all: check-arch challenge1 challenge2 challenge3 challenge4 challenge5
 
 check-arch:
 	@echo "Building binaries for security training..."
-	@if [ "$(ARCH_CHECK)" = "x86_64" ]; then \
-		echo "Note: Building 32-bit binaries on 64-bit system"; \
-		echo "You may need to install 32-bit libraries:"; \
-		echo "  Ubuntu/Debian: sudo apt-get install gcc-multilib"; \
-		echo "  Fedora/RHEL: sudo dnf install glibc-devel.i686"; \
+	@echo "Detected: $(OS_CHECK) on $(ARCH_CHECK)"
+	@if [ "$(OS_CHECK)" = "Darwin" ] && [ "$(ARCH_CHECK)" = "arm64" ]; then \
+		echo "Note: Apple Silicon detected - building native ARM64 binaries"; \
+		echo "Stack protections disabled for educational purposes"; \
+	elif [ "$(OS_CHECK)" = "Linux" ] && [ "$(ARCH_CHECK)" = "x86_64" ]; then \
+		echo "Note: Building 32-bit binaries on 64-bit Linux"; \
+		echo "You may need: sudo apt-get install gcc-multilib"; \
 	fi
+	@echo ""
 
 challenge1: challenge1_buffer_overflow.c
 	@echo "Compiling Challenge 1: Buffer Overflow..."

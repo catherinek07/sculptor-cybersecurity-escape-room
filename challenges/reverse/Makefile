@@ -1,12 +1,33 @@
 # Makefile for Cat-astrophic Security Reverse Engineering Challenges
 
 CC = gcc
-CFLAGS = -m32 -O0 -g -no-pie
+ARCH_CHECK = $(shell uname -m)
+OS_CHECK = $(shell uname -s)
+
+# Detect architecture and OS to set appropriate flags
+ifeq ($(OS_CHECK),Darwin)
+    # macOS (both Intel and Apple Silicon)
+    CFLAGS = -O0 -g
+else
+    # Linux - compile 32-bit
+    CFLAGS = -m32 -O0 -g -no-pie
+endif
+
 STRIP_FLAGS = -s
 
 .PHONY: all clean stripped
 
-all: challenge1 challenge2 challenge3
+all: check-arch challenge1 challenge2 challenge3
+
+check-arch:
+	@echo "Building reverse engineering challenges..."
+	@echo "Detected: $(OS_CHECK) on $(ARCH_CHECK)"
+	@if [ "$(OS_CHECK)" = "Darwin" ] && [ "$(ARCH_CHECK)" = "arm64" ]; then \
+		echo "Note: Apple Silicon detected - building native ARM64 binaries"; \
+	elif [ "$(OS_CHECK)" = "Linux" ]; then \
+		echo "Note: Building 32-bit binaries on Linux"; \
+	fi
+	@echo ""
 
 stripped: challenge1_stripped challenge2_stripped challenge3_stripped
 
