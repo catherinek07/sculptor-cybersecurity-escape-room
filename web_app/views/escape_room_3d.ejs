@@ -3,159 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Cat Cafe Escape Room</title>
+    <title>3D Cat Cafe Escape Room - Hex Edition</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Courier New', monospace;
-            overflow: hidden;
-            background: #000;
-        }
-
-        #canvas-container {
-            width: 100vw;
-            height: 100vh;
-            cursor: pointer;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Courier New', monospace; overflow: hidden; background: #aabbcc; }
+        #canvas-container { width: 100vw; height: 100vh; cursor: pointer; }
 
         #hud {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            color: #0f0;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 15px;
-            border: 2px solid #0f0;
-            border-radius: 5px;
-            font-size: 14px;
-            z-index: 1000;
-            max-width: 300px;
+            position: fixed; top: 20px; left: 20px;
+            color: #aaffbb; background: rgba(10, 10, 10, 0.9);
+            padding: 15px; border: 2px solid #aaffbb;
+            border-radius: 5px; font-size: 14px; z-index: 1000;
+        }
+
+        #terminal {
+            position: fixed; bottom: 20px; right: 20px;
+            width: 400px; height: 250px;
+            background: rgba(10, 10, 10, 0.95);
+            border: 3px solid #aaffbb; border-radius: 5px;
+            color: #aaffbb; padding: 10px;
+            z-index: 1500; cursor: move;
+            display: flex; flex-direction: column;
+        }
+
+        #terminal-header {
+            font-weight: bold; margin-bottom: 10px;
+            padding-bottom: 5px; border-bottom: 1px solid #aaffbb;
+        }
+
+        #terminal-output {
+            flex: 1; overflow-y: auto;
+            margin-bottom: 10px; font-size: 11px;
+        }
+
+        #terminal-input {
+            width: 100%; background: #aaaaaa;
+            border: 1px solid #aaffbb; color: #eeffee;
+            padding: 5px; font-family: 'Courier New', monospace;
         }
 
         #interaction-panel {
-            position: fixed;
-            top: 50%;
-            left: 50%;
+            position: fixed; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.95);
-            border: 3px solid #0f0;
-            border-radius: 10px;
-            padding: 30px;
-            color: #0f0;
-            display: none;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
+            background: rgba(10, 10, 10, 0.95);
+            border: 3px solid #aaffbb; border-radius: 10px;
+            padding: 30px; color: #aaffbb;
+            display: none; max-width: 600px;
+            max-height: 80vh; overflow-y: auto;
             z-index: 2000;
         }
 
-        #interaction-panel h2 {
-            color: #0ff;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        #interaction-panel input,
-        #interaction-panel textarea {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            background: #000;
-            border: 1px solid #0f0;
-            color: #0f0;
-            font-family: 'Courier New', monospace;
+        #interaction-panel h2 { color: #aabbff; margin-bottom: 15px; text-align: center; }
+        #interaction-panel input, #interaction-panel textarea {
+            width: 100%; padding: 10px; margin: 10px 0;
+            background: #aaaaaa; border: 1px solid #aaffbb;
+            color: #eeffee; font-family: 'Courier New', monospace;
         }
 
         #interaction-panel button {
-            background: #0f0;
-            color: #000;
-            border: none;
-            padding: 10px 20px;
-            margin: 5px;
-            cursor: pointer;
-            font-family: 'Courier New', monospace;
+            background: #aaffbb; color: #aaaaaa;
+            border: none; padding: 10px 20px; margin: 5px;
+            cursor: pointer; font-family: 'Courier New', monospace;
             font-weight: bold;
         }
 
-        #interaction-panel button:hover {
-            background: #0ff;
-        }
-
-        .close-btn {
-            float: right;
-            cursor: pointer;
-            font-size: 24px;
-            color: #f00;
-        }
+        #interaction-panel button:hover { background: #aabbff; }
+        .close-btn { float: right; cursor: pointer; font-size: 24px; color: #ffaabb; }
 
         #crosshair {
-            position: fixed;
-            top: 50%;
-            left: 50%;
+            position: fixed; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 20px;
-            height: 20px;
-            pointer-events: none;
-            z-index: 999;
+            width: 20px; height: 20px;
+            pointer-events: none; z-index: 999;
         }
 
-        #crosshair::before,
-        #crosshair::after {
-            content: '';
-            position: absolute;
-            background: rgba(0, 255, 0, 0.7);
+        #crosshair::before, #crosshair::after {
+            content: ''; position: absolute;
+            background: rgba(170, 255, 187, 0.7);
         }
 
         #crosshair::before {
-            top: 50%;
-            left: 0;
-            width: 100%;
-            height: 2px;
+            top: 50%; left: 0; width: 100%; height: 2px;
             transform: translateY(-50%);
         }
 
         #crosshair::after {
-            left: 50%;
-            top: 0;
-            width: 2px;
-            height: 100%;
+            left: 50%; top: 0; width: 2px; height: 100%;
             transform: translateX(-50%);
         }
 
         #instructions {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
+            position: fixed; bottom: 20px; left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: #0f0;
-            padding: 10px 20px;
-            border: 2px solid #0f0;
-            border-radius: 5px;
-            text-align: center;
-            z-index: 1000;
+            background: rgba(10, 10, 10, 0.8);
+            color: #aaffbb; padding: 10px 20px;
+            border: 2px solid #aaffbb; border-radius: 5px;
+            text-align: center; z-index: 1000;
         }
 
-        .result-message {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 5px;
-        }
-
-        .success {
-            background: rgba(0, 255, 0, 0.2);
-            border: 1px solid #0f0;
-        }
-
-        .error {
-            background: rgba(255, 0, 0, 0.2);
-            border: 1px solid #f00;
-            color: #f00;
+        .result-message { margin-top: 15px; padding: 10px; border-radius: 5px; }
+        .success { background: rgba(170, 255, 187, 0.2); border: 1px solid #aaffbb; }
+        .error { background: rgba(255, 170, 187, 0.2); border: 1px solid #ffaabb; color: #ffaabb; }
+        .hint-text {
+            color: #ffddaa; font-style: italic;
+            margin-top: 10px; padding: 10px;
+            background: rgba(255, 221, 170, 0.1);
+            border-left: 3px solid #ffddaa;
         }
     </style>
 </head>
@@ -163,17 +116,22 @@
     <div id="canvas-container"></div>
 
     <div id="hud">
-        <strong>🐱 CAT CAFE ESCAPE ROOM</strong><br>
-        <span id="room-name">Main Hall</span><br>
-        <span id="objective">Explore and find challenges!</span><br>
-        <br>
-        Flags Found: <span id="flag-count">0</span>/15
+        <strong>CAT CAFE ESCAPE ROOM</strong><br>
+        <span id="room-name">Lobby</span><br>
+        Flags: <span id="flag-count">0</span>/16<br>
+        Mode: <span id="interaction-mode">EXPLORE</span>
+    </div>
+
+    <div id="terminal">
+        <div id="terminal-header">TERMINAL (Drag to move)</div>
+        <div id="terminal-output">&gt; Welcome to Cat Cafe Escape Room<br>&gt; ESC to toggle UI mode<br>&gt; Type 'help' for commands<br></div>
+        <input type="text" id="terminal-input" placeholder=">">
     </div>
 
     <div id="crosshair"></div>
 
     <div id="instructions">
-        WASD: Move | Mouse: Look | E: Interact | ESC: Close Panel | Click to lock cursor
+        WASD: Move | Mouse: Look | SPACE: Jump | ↑: Interact/Close | ESC: Toggle UI Mode
     </div>
 
     <div id="interaction-panel">
@@ -183,209 +141,598 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // Game state
-        let scene, camera, renderer, controls;
+        // ===== GAME STATE =====
+        let scene, camera, renderer;
         let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
-        let velocity = new THREE.Vector3();
-        let direction = new THREE.Vector3();
-        let prevTime = performance.now();
-        let isLocked = false;
-        let interactables = [];
-        let flagsFound = new Set();
+        let canJump = true, velocity = new THREE.Vector3(), direction = new THREE.Vector3();
+        let prevTime = performance.now(), isLocked = false;
+        let interactables = [], doors = [], walls = [];
+        let flagsFound = new Set(), currentRoom = 'lobby';
+        let uiInteractionMode = false, currentPanel = null;
+        let roomCompletion = { web: 0, crypto: 0, binary: 0, reverse: 0, forensics: 0 };
 
         const euler = new THREE.Euler(0, 0, 0, 'YXZ');
-        const PI_2 = Math.PI / 2;
+        const PI_2 = Math.PI / 2, GRAVITY = 20, JUMP_VELOCITY = 8;
+        const roomRequirements = { web: 5, crypto: 5, binary: 3, reverse: 2, forensics: 1 };
 
-        // Initialize
+        // Room offset positions (separate virtual spaces)
+        const roomOffsets = {
+            lobby: { x: 0, z: 0 },
+            web: { x: 100, z: 0 },
+            crypto: { x: 200, z: 0 },
+            binary: { x: 300, z: 0 },
+            reverse: { x: 400, z: 0 },
+            forensics: { x: 500, z: 0 }
+        };
+
         init();
         animate();
+        setupTerminal();
 
+        // ===== INITIALIZATION =====
         function init() {
-            // Scene
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x111111);
-            scene.fog = new THREE.Fog(0x111111, 0, 50);
+            scene.background = new THREE.Color(0xaabbcc);
+            scene.fog = new THREE.Fog(0xaabbcc, 0, 50);
 
-            // Camera
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.set(0, 1.6, 0);
 
-            // Renderer
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.shadowMap.enabled = true;
             document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-            // Lights
-            const ambientLight = new THREE.AmbientLight(0x404040, 2);
+            const ambientLight = new THREE.AmbientLight(0xaabbcc, 1.5);
             scene.add(ambientLight);
 
-            const pointLight = new THREE.PointLight(0xffffff, 1, 100);
-            pointLight.position.set(0, 10, 0);
-            scene.add(pointLight);
-
-            // Create the escape room
-            createEscapeRoom();
-
-            // Controls
+            createAllRooms();
             setupControls();
-
-            // Window resize
             window.addEventListener('resize', onWindowResize);
         }
 
-        function createEscapeRoom() {
-            // Floor
-            const floorGeometry = new THREE.PlaneGeometry(60, 60);
-            const floorMaterial = new THREE.MeshStandardMaterial({
-                color: 0x222222,
-                roughness: 0.8
-            });
+        // ===== ROOM CREATION =====
+        function createAllRooms() {
+            createLobby();
+            createCategoryRoom('web', 0xaaffbb, [
+                { id: 'sql', label: 'SQL INJECTION', pos: [-8, 2, -8] },
+                { id: 'xss', label: 'XSS ATTACK', pos: [-4, 2, -8] },
+                { id: 'traversal', label: 'DIR TRAVERSAL', pos: [0, 2, -8] },
+                { id: 'auth', label: 'AUTH BYPASS', pos: [4, 2, -8] },
+                { id: 'cats', label: 'CAT DATABASE', pos: [8, 2, -8] }
+            ]);
+            createCategoryRoom('crypto', 0xffaabb, [
+                { id: 'caesar', label: 'CAESAR CIPHER', pos: [-8, 2, -8] },
+                { id: 'hash', label: 'HASH CRACK', pos: [-4, 2, -8] },
+                { id: 'xor', label: 'XOR DECRYPT', pos: [0, 2, -8] },
+                { id: 'rsa', label: 'WEAK RSA', pos: [4, 2, -8] },
+                { id: 'base64', label: 'BASE64 LAYERS', pos: [8, 2, -8] }
+            ]);
+            createCategoryRoom('binary', 0xffbbaa, [
+                { id: 'buffer', label: 'BUFFER OVERFLOW', pos: [-6, 2, -8] },
+                { id: 'format', label: 'FORMAT STRING', pos: [0, 2, -8] },
+                { id: 'shellcode', label: 'SHELLCODE', pos: [6, 2, -8] }
+            ]);
+            createCategoryRoom('reverse', 0xaabbff, [
+                { id: 'keygen', label: 'KEYGEN', pos: [-4, 2, -8] },
+                { id: 'password', label: 'PASSWORD CHECK', pos: [4, 2, -8] }
+            ]);
+            createCategoryRoom('forensics', 0xffeedd, [
+                { id: 'photos', label: 'CAT PHOTOS', pos: [0, 2, -8] }
+            ]);
+        }
+
+        function createLobby() {
+            const offset = roomOffsets.lobby;
+            // Create lobby floor with darker color
+            const floorGeometry = new THREE.PlaneGeometry(30, 30);
+            const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xaabbcc, roughness: 0.8 });
             const floor = new THREE.Mesh(floorGeometry, floorMaterial);
             floor.rotation.x = -Math.PI / 2;
-            floor.receiveShadow = true;
+            floor.position.set(offset.x, 0, offset.z);
             scene.add(floor);
 
-            // Ceiling
-            const ceiling = new THREE.Mesh(floorGeometry, floorMaterial);
+            // Lobby ceiling (lighter)
+            const ceiling = new THREE.Mesh(floorGeometry, new THREE.MeshStandardMaterial({ color: 0xbcdeef, roughness: 0.8 }));
             ceiling.rotation.x = Math.PI / 2;
-            ceiling.position.y = 4;
+            ceiling.position.set(offset.x, 5, offset.z);
             scene.add(ceiling);
 
-            // Main room walls
-            createWall(-30, 2, 0, 60, 4, 0.5); // Left wall
-            createWall(30, 2, 0, 60, 4, 0.5);  // Right wall
-            createWall(0, 2, -30, 0.5, 4, 60); // Back wall
-            createWall(0, 2, 30, 0.5, 4, 60);  // Front wall
+            // Create walls with gaps for doors
+            // Left wall sections (gaps at z=-5 and z=+5 for doors)
+            createWall(offset.x - 15, 2.5, offset.z - 12, 0.5, 5, 6);  // Top section
+            createWall(offset.x - 15, 2.5, offset.z, 0.5, 5, 8);       // Middle section
+            createWall(offset.x - 15, 2.5, offset.z + 12, 0.5, 5, 6);  // Bottom section
 
-            // Create different challenge areas
-            createWebChallengeArea();
-            createCryptoArea();
-            createBinaryArea();
-            createReverseArea();
-            createForensicsArea();
+            // Right wall sections (gap at z=-5 for door)
+            createWall(offset.x + 15, 2.5, offset.z - 12, 0.5, 5, 6);  // Top section
+            createWall(offset.x + 15, 2.5, offset.z + 2, 0.5, 5, 16);  // Bottom section
 
-            // Add some cat decorations
-            addCatDecorations();
+            // Back wall sections (gaps at x=-5 and x=+5 for doors)
+            createWall(offset.x - 12, 2.5, offset.z - 15, 6, 5, 0.5);  // Left section
+            createWall(offset.x, 2.5, offset.z - 15, 8, 5, 0.5);       // Middle section
+            createWall(offset.x + 12, 2.5, offset.z - 15, 6, 5, 0.5);  // Right section
+
+            // Front wall (solid)
+            createWall(offset.x, 2.5, offset.z + 15, 30, 5, 0.5);
+
+            // Door order: web (open) -> crypto -> binary -> reverse -> forensics
+            // Doors positioned slightly inside walls to avoid z-fighting
+            createDoor(offset.x + 14.5, 2, offset.z - 5, 'web', true, 0xaaffbb, null, 'vertical'); // Right wall
+            createDoor(offset.x - 5, 2, offset.z - 14.5, 'crypto', false, 0xffaabb, 'web', 'horizontal'); // Back wall
+            createDoor(offset.x + 5, 2, offset.z - 14.5, 'binary', false, 0xffbbaa, 'crypto', 'horizontal'); // Back wall
+            createDoor(offset.x - 14.5, 2, offset.z - 5, 'reverse', false, 0xaabbff, 'binary', 'vertical'); // Left wall
+            createDoor(offset.x - 14.5, 2, offset.z + 5, 'forensics', false, 0xffeedd, 'reverse', 'vertical'); // Left wall
         }
 
-        function createWall(x, y, z, width, height, depth) {
-            const geometry = new THREE.BoxGeometry(width, height, depth);
-            const material = new THREE.MeshStandardMaterial({ color: 0x333333 });
-            const wall = new THREE.Mesh(geometry, material);
-            wall.position.set(x, y, z);
-            wall.receiveShadow = true;
-            wall.castShadow = true;
-            scene.add(wall);
-        }
+        function createCategoryRoom(roomName, color, challenges) {
+            const offset = roomOffsets[roomName];
+            createFloorCeiling(offset.x, offset.z, 30, color);
 
-        function createTerminal(x, y, z, color, label, challengeType, challengeId) {
-            // Terminal screen
-            const screenGeometry = new THREE.BoxGeometry(2, 1.5, 0.1);
-            const screenMaterial = new THREE.MeshStandardMaterial({
-                color: color,
-                emissive: color,
-                emissiveIntensity: 0.5
+            // Create walls with gap for entrance door at front
+            createWall(offset.x - 15, 2.5, offset.z, 0.5, 5, 30);   // Left wall
+            createWall(offset.x + 15, 2.5, offset.z, 0.5, 5, 30);   // Right wall
+            createWall(offset.x, 2.5, offset.z - 15, 30, 5, 0.5);   // Back wall
+
+            // Front wall with gap for entrance door
+            createWall(offset.x - 12, 2.5, offset.z + 15, 6, 5, 0.5);  // Left section
+            createWall(offset.x + 12, 2.5, offset.z + 15, 6, 5, 0.5);  // Right section
+
+            // Create entrance door (visible from inside) - offset to avoid z-fighting
+            createEntranceDoor(offset.x, 2, offset.z + 14.5, roomName, color);
+
+            // Scatter terminals in random positions around the room
+            const usedPositions = [];
+            challenges.forEach((ch, idx) => {
+                let x, z, attempts = 0;
+                do {
+                    // Random positions within room bounds, avoiding center and door areas
+                    x = offset.x + (Math.random() * 20 - 10);
+                    z = offset.z + (Math.random() * 16 - 12);
+                    attempts++;
+                } while (attempts < 50 && usedPositions.some(pos =>
+                    Math.abs(pos.x - x) < 3 && Math.abs(pos.z - z) < 3
+                ));
+
+                usedPositions.push({x, z});
+                createTerminal(x, 2, z, color, ch.label, roomName, ch.id);
             });
-            const screen = new THREE.Mesh(screenGeometry, screenMaterial);
-            screen.position.set(x, y, z);
 
-            // Add text label
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-            canvas.width = 512;
-            canvas.height = 256;
-            context.fillStyle = '#000';
-            context.fillRect(0, 0, 512, 256);
-            context.fillStyle = '#0f0';
-            context.font = 'bold 40px Courier New';
-            context.textAlign = 'center';
-            context.fillText(label, 256, 128);
+            // Add hints scattered in random positions
+            const hints = getHintsFor(roomName);
+            hints.forEach((hint, i) => {
+                let x, z, attempts = 0;
+                do {
+                    x = offset.x + (Math.random() * 22 - 11);
+                    z = offset.z + (Math.random() * 22 - 11);
+                    attempts++;
+                } while (attempts < 50 && usedPositions.some(pos =>
+                    Math.abs(pos.x - x) < 2 && Math.abs(pos.z - z) < 2
+                ));
 
-            const texture = new THREE.CanvasTexture(canvas);
-            const labelMaterial = new THREE.MeshBasicMaterial({ map: texture });
-            const labelGeometry = new THREE.PlaneGeometry(1.8, 0.9);
-            const labelMesh = new THREE.Mesh(labelGeometry, labelMaterial);
-            labelMesh.position.set(x, y, z + 0.06);
-            scene.add(labelMesh);
+                usedPositions.push({x, z});
+                createHintObject(x, 0.5, z, roomName, hint, i);
+            });
 
-            screen.userData = {
-                interactable: true,
-                challengeType: challengeType,
-                challengeId: challengeId,
-                label: label
-            };
+            // Add decorative objects
+            addRoomDecorations(offset.x, offset.z, color, usedPositions);
 
-            interactables.push(screen);
-            scene.add(screen);
-
-            // Stand
-            const standGeometry = new THREE.CylinderGeometry(0.1, 0.2, 1.5, 8);
-            const standMaterial = new THREE.MeshStandardMaterial({ color: 0x555555 });
-            const stand = new THREE.Mesh(standGeometry, standMaterial);
-            stand.position.set(x, y - 1.2, z);
-            scene.add(stand);
+            // Exit door back to lobby - offset and centered
+            createExitDoor(offset.x, 2, offset.z - 14.5, roomName, color);
         }
 
-        function createWebChallengeArea() {
-            // Web challenges section (left side)
-            createTerminal(-20, 2, -20, 0x00ff00, 'SQL INJECTION', 'web', 'sql');
-            createTerminal(-20, 2, -15, 0x00ff00, 'XSS ATTACK', 'web', 'xss');
-            createTerminal(-20, 2, -10, 0x00ff00, 'DIR TRAVERSAL', 'web', 'traversal');
-            createTerminal(-20, 2, -5, 0x00ff00, 'AUTH BYPASS', 'web', 'auth');
-            createTerminal(-20, 2, 0, 0x00ff00, 'CAT DATABASE', 'web', 'cats');
-        }
+        function addRoomDecorations(offsetX, offsetZ, color, usedPositions) {
+            // Add various decorative objects - MUCH LARGER
+            const decorationTypes = ['box', 'cylinder', 'sphere', 'cone'];
+            const numDecorations = 8 + Math.floor(Math.random() * 5);
 
-        function createCryptoArea() {
-            // Crypto challenges (back right)
-            createTerminal(20, 2, -20, 0xff00ff, 'CAESAR CIPHER', 'crypto', 'caesar');
-            createTerminal(20, 2, -15, 0xff00ff, 'HASH CRACK', 'crypto', 'hash');
-            createTerminal(20, 2, -10, 0xff00ff, 'XOR DECRYPT', 'crypto', 'xor');
-            createTerminal(20, 2, -5, 0xff00ff, 'WEAK RSA', 'crypto', 'rsa');
-            createTerminal(20, 2, 0, 0xff00ff, 'BASE64 LAYERS', 'crypto', 'base64');
-        }
+            for (let i = 0; i < numDecorations; i++) {
+                let x, z, attempts = 0;
+                do {
+                    x = offsetX + (Math.random() * 24 - 12);
+                    z = offsetZ + (Math.random() * 24 - 12);
+                    attempts++;
+                } while (attempts < 30 && usedPositions.some(pos =>
+                    Math.abs(pos.x - x) < 3 && Math.abs(pos.z - z) < 3
+                ));
 
-        function createBinaryArea() {
-            // Binary exploitation (front left)
-            createTerminal(-20, 2, 10, 0xff0000, 'BUFFER OVERFLOW', 'binary', 'buffer');
-            createTerminal(-20, 2, 15, 0xff0000, 'FORMAT STRING', 'binary', 'format');
-            createTerminal(-20, 2, 20, 0xff0000, 'SHELLCODE', 'binary', 'shellcode');
-        }
+                const type = decorationTypes[Math.floor(Math.random() * decorationTypes.length)];
+                const size = 1.0 + Math.random() * 1.5;  // Much larger: 1.0 - 2.5 units
+                const height = 1.5 + Math.random() * 2.0;  // Much taller: 1.5 - 3.5 units
 
-        function createReverseArea() {
-            // Reverse engineering (front right)
-            createTerminal(20, 2, 10, 0x00ffff, 'KEYGEN', 'reverse', 'keygen');
-            createTerminal(20, 2, 15, 0x00ffff, 'PASSWORD CHECK', 'reverse', 'password');
-        }
+                let geometry;
+                switch(type) {
+                    case 'box':
+                        geometry = new THREE.BoxGeometry(size, height, size);
+                        break;
+                    case 'cylinder':
+                        geometry = new THREE.CylinderGeometry(size/2, size/2, height, 8);
+                        break;
+                    case 'sphere':
+                        geometry = new THREE.SphereGeometry(size, 8, 8);
+                        break;
+                    case 'cone':
+                        geometry = new THREE.ConeGeometry(size/2, height, 8);
+                        break;
+                }
 
-        function createForensicsArea() {
-            // Forensics (center)
-            createTerminal(0, 2, -10, 0xffff00, 'CAT PHOTOS', 'forensics', 'photos');
-        }
-
-        function addCatDecorations() {
-            // Add some cat-themed objects
-            for (let i = 0; i < 10; i++) {
-                const catGeometry = new THREE.SphereGeometry(0.3, 8, 8);
-                const catMaterial = new THREE.MeshStandardMaterial({
-                    color: Math.random() * 0xffffff
+                const material = new THREE.MeshStandardMaterial({
+                    color: Math.random() > 0.5 ? color : 0xabcdef,
+                    roughness: 0.7
                 });
-                const cat = new THREE.Mesh(catGeometry, catMaterial);
-                cat.position.set(
-                    Math.random() * 40 - 20,
-                    0.3,
-                    Math.random() * 40 - 20
+
+                const decoration = new THREE.Mesh(geometry, material);
+                decoration.position.set(x, height/2, z);
+                decoration.rotation.y = Math.random() * Math.PI * 2;
+                scene.add(decoration);
+            }
+
+            // Add some cat-themed decorations (larger spheres as "cat toys")
+            for (let i = 0; i < 5; i++) {
+                const x = offsetX + (Math.random() * 24 - 12);
+                const z = offsetZ + (Math.random() * 24 - 12);
+                const catToy = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.6, 12, 12),  // Much larger: 0.6 radius
+                    new THREE.MeshStandardMaterial({
+                        color: [0xffaabb, 0xaabbff, 0xffddaa, 0xaaffbb][Math.floor(Math.random() * 4)],
+                        emissive: 0xaaaaaa,
+                        emissiveIntensity: 0.3
+                    })
                 );
-                scene.add(cat);
+                catToy.position.set(x, 0.6, z);
+                scene.add(catToy);
             }
         }
 
+        function createFloorCeiling(x, z, size, color) {
+            const geometry = new THREE.PlaneGeometry(size, size);
+            const material = new THREE.MeshStandardMaterial({ color, roughness: 0.8 });
+
+            const floor = new THREE.Mesh(geometry, material);
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.set(x, 0, z);
+            scene.add(floor);
+
+            const ceiling = floor.clone();
+            ceiling.rotation.x = Math.PI / 2;
+            ceiling.position.y = 5;
+            scene.add(ceiling);
+        }
+
+        function createWall(x, y, z, w, h, d) {
+            const geometry = new THREE.BoxGeometry(w, h, d);
+            const material = new THREE.MeshStandardMaterial({ color: 0xabcdef });
+            const wall = new THREE.Mesh(geometry, material);
+            wall.position.set(x, y, z);
+            walls.push(wall);
+            scene.add(wall);
+        }
+
+        function createDoor(x, y, z, roomName, isOpen, color, unlocksAfter, orientation) {
+            const door = new THREE.Mesh(
+                new THREE.BoxGeometry(3, 4, 0.5),  // Larger and thicker
+                new THREE.MeshStandardMaterial({
+                    color: isOpen ? color : 0xabcdef,
+                    emissive: isOpen ? color : 0xaaaaaa,
+                    emissiveIntensity: isOpen ? 0.5 : 0.2,  // More glow
+                    transparent: isOpen, opacity: isOpen ? 0.5 : 1,
+                    side: THREE.DoubleSide // Visible from both sides
+                })
+            );
+            door.position.set(x, y, z);
+
+            // Rotate door to be parallel to wall
+            if (orientation === 'vertical') {
+                door.rotation.y = Math.PI / 2; // 90 degrees for side walls
+            }
+            // horizontal orientation is default (0 rotation) for front/back walls
+
+            door.userData = { isDoor: true, roomName, isOpen, color, unlocksAfter, orientation };
+
+            doors.push(door);
+            if (!isOpen) walls.push(door);
+            scene.add(door);
+
+            addDoorLabel(door, roomName, isOpen, orientation);
+        }
+
+        function addDoorLabel(door, roomName, isOpen, orientation) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+
+            // Background
+            ctx.fillStyle = isOpen ? '#aaffbb' : '#abcdef';
+            ctx.fillRect(0, 0, 512, 256);
+
+            // Border
+            ctx.strokeStyle = '#aaaaaa';
+            ctx.lineWidth = 6;
+            ctx.strokeRect(0, 0, 512, 256);
+
+            // Category name
+            ctx.fillStyle = '#aaaaaa';
+            ctx.font = 'bold 48px Courier';
+            ctx.textAlign = 'center';
+            ctx.fillText(roomName.toUpperCase(), 256, 100);
+
+            // Status and room type
+            ctx.font = 'bold 32px Courier';
+            ctx.fillText(isOpen ? 'OPEN' : 'LOCKED', 256, 160);
+
+            // Category subtitle
+            const categoryLabels = {
+                web: 'WEB SECURITY',
+                crypto: 'CRYPTOGRAPHY',
+                binary: 'BINARY EXPLOIT',
+                reverse: 'REVERSE ENGINEERING',
+                forensics: 'DIGITAL FORENSICS'
+            };
+            ctx.font = '24px Courier';
+            ctx.fillText(categoryLabels[roomName] || '', 256, 200);
+
+            const label = new THREE.Mesh(
+                new THREE.PlaneGeometry(2.8, 1.4),
+                new THREE.MeshBasicMaterial({
+                    map: new THREE.CanvasTexture(canvas),
+                    side: THREE.DoubleSide // Visible from both sides
+                })
+            );
+
+            // Position label centered on door
+            label.position.copy(door.position);
+
+            // Offset label slightly in front of door and rotate based on orientation
+            if (orientation === 'vertical') {
+                // For side walls, offset on X axis
+                label.position.x += door.position.x > 0 ? -0.3 : 0.3;
+                label.rotation.y = Math.PI / 2;
+            } else {
+                // For front/back walls, offset on Z axis
+                label.position.z += door.position.z > 0 ? -0.3 : 0.3;
+            }
+
+            scene.add(label);
+            door.userData.label = label;
+        }
+
+        function createEntranceDoor(x, y, z, roomName, color) {
+            // Create entrance door visible from inside room (matches lobby door)
+            const door = new THREE.Mesh(
+                new THREE.BoxGeometry(3, 4, 0.5),
+                new THREE.MeshStandardMaterial({
+                    color,
+                    emissive: color,
+                    emissiveIntensity: 0.5,
+                    transparent: true,
+                    opacity: 0.5,
+                    side: THREE.DoubleSide
+                })
+            );
+            door.position.set(x, y, z);
+            scene.add(door);
+
+            // Add label
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#aaffbb';
+            ctx.fillRect(0, 0, 512, 256);
+
+            ctx.strokeStyle = '#aaaaaa';
+            ctx.lineWidth = 6;
+            ctx.strokeRect(0, 0, 512, 256);
+
+            ctx.fillStyle = '#aaaaaa';
+            ctx.font = 'bold 48px Courier';
+            ctx.textAlign = 'center';
+            ctx.fillText('ENTRANCE', 256, 120);
+
+            ctx.font = '32px Courier';
+            ctx.fillText(roomName.toUpperCase(), 256, 180);
+
+            const label = new THREE.Mesh(
+                new THREE.PlaneGeometry(2.8, 1.4),
+                new THREE.MeshBasicMaterial({
+                    map: new THREE.CanvasTexture(canvas),
+                    side: THREE.DoubleSide
+                })
+            );
+            label.position.set(x, y, z - 0.3);
+            scene.add(label);
+        }
+
+        function createExitDoor(x, y, z, fromRoom, color) {
+            const door = new THREE.Mesh(
+                new THREE.BoxGeometry(3, 4, 0.3),
+                new THREE.MeshStandardMaterial({
+                    color,
+                    emissive: color,
+                    emissiveIntensity: 0.4,
+                    transparent: true,
+                    opacity: 0.7,
+                    side: THREE.DoubleSide
+                })
+            );
+            door.position.set(x, y, z);
+            door.userData = { isExitDoor: true, fromRoom, interactable: true };
+            interactables.push(door);
+            scene.add(door);
+
+            // Add label to exit door
+            const canvas = document.createElement('canvas');
+            canvas.width = 256; canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#aaffbb';
+            ctx.fillRect(0, 0, 256, 128);
+            ctx.fillStyle = '#aaaaaa';
+            ctx.font = 'bold 32px Courier';
+            ctx.textAlign = 'center';
+            ctx.fillText('← LOBBY', 128, 70);
+
+            const label = new THREE.Mesh(
+                new THREE.PlaneGeometry(2.5, 1.2),
+                new THREE.MeshBasicMaterial({
+                    map: new THREE.CanvasTexture(canvas),
+                    side: THREE.DoubleSide
+                })
+            );
+            label.position.set(x, y + 0.5, z - 0.2);
+            scene.add(label);
+        }
+
+        function createTerminal(x, y, z, color, label, category, challengeId) {
+            const terminal = new THREE.Mesh(
+                new THREE.BoxGeometry(2, 1.5, 0.1),
+                new THREE.MeshStandardMaterial({
+                    color, emissive: color, emissiveIntensity: 0.3
+                })
+            );
+            terminal.position.set(x, y, z);
+            terminal.userData = {
+                interactable: true, isTerminal: true,
+                challengeType: category, challengeId, label
+            };
+            interactables.push(terminal);
+            scene.add(terminal);
+
+            // Add description panel below terminal
+            const description = getPuzzleDescription(challengeId);
+            createDescriptionPanel(x, y - 1.2, z + 0.1, label, description, color);
+        }
+
+        function getPuzzleDescription(challengeId) {
+            const descriptions = {
+                sql: "Exploit SQL injection to bypass login",
+                xss: "Inject JavaScript into web page",
+                traversal: "Access files outside web root",
+                auth: "Bypass authentication checks",
+                cats: "Find hidden database information",
+                caesar: "Decrypt shifted cipher text",
+                hash: "Crack MD5 password hash",
+                xor: "Break single-byte XOR encryption",
+                rsa: "Factor weak RSA modulus",
+                base64: "Decode layered Base64 encoding",
+                buffer: "Overflow buffer to control execution",
+                format: "Exploit format string vulnerability",
+                shellcode: "Inject and run machine code",
+                keygen: "Reverse engineer key algorithm",
+                password: "Find correct password in binary",
+                photos: "Extract hidden data from images"
+            };
+            return descriptions[challengeId] || "Unknown challenge";
+        }
+
+        function createDescriptionPanel(x, y, z, title, description, color) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+
+            // Background
+            ctx.fillStyle = '#aaaaaa';
+            ctx.fillRect(0, 0, 512, 256);
+
+            // Border
+            ctx.strokeStyle = '#' + color.toString(16).padStart(6, '0');
+            ctx.lineWidth = 4;
+            ctx.strokeRect(0, 0, 512, 256);
+
+            // Title
+            ctx.fillStyle = '#eeffee';
+            ctx.font = 'bold 28px Courier';
+            ctx.textAlign = 'center';
+            ctx.fillText(title, 256, 80);
+
+            // Description (word wrap)
+            ctx.font = '18px Courier';
+            ctx.fillStyle = '#ffddaa';
+            const words = description.split(' ');
+            let line = '';
+            let yPos = 140;
+
+            for (let word of words) {
+                const testLine = line + word + ' ';
+                const metrics = ctx.measureText(testLine);
+                if (metrics.width > 450 && line !== '') {
+                    ctx.fillText(line, 256, yPos);
+                    line = word + ' ';
+                    yPos += 25;
+                } else {
+                    line = testLine;
+                }
+            }
+            ctx.fillText(line, 256, yPos);
+
+            const panel = new THREE.Mesh(
+                new THREE.PlaneGeometry(2, 1),
+                new THREE.MeshBasicMaterial({
+                    map: new THREE.CanvasTexture(canvas),
+                    transparent: true,
+                    opacity: 0.9
+                })
+            );
+            panel.position.set(x, y, z);
+            scene.add(panel);
+        }
+
+        function createHintObject(x, y, z, roomName, hintText, index) {
+            const hint = new THREE.Mesh(
+                new THREE.SphereGeometry(0.3),
+                new THREE.MeshStandardMaterial({
+                    color: 0xffddaa, emissive: 0xffddaa, emissiveIntensity: 0.5
+                })
+            );
+            hint.position.set(x, y, z);
+            hint.userData = {
+                interactable: true, isHint: true,
+                hintText, roomName
+            };
+            interactables.push(hint);
+            scene.add(hint);
+        }
+
+        // ===== HINTS =====
+        function getHintsFor(room) {
+            const hints = {
+                web: [
+                    "SQL: Try using quotes and OR statements",
+                    "XSS: Inject script tags in user input",
+                    "Traversal: Use .. to go up directories",
+                    "Auth: Check what cookies the site expects",
+                    "Database: Look for hidden columns"
+                ],
+                crypto: [
+                    "Caesar: It's a shift of 3",
+                    "Hash: Try common passwords",
+                    "XOR: Single byte key, try all 256",
+                    "RSA: Factor 143 = 11 * 13",
+                    "Base64: Decode multiple times"
+                ],
+                binary: [
+                    "Buffer: Overflow to overwrite return address",
+                    "Format: Use %x to read memory",
+                    "Shellcode: Inject and execute code"
+                ],
+                reverse: [
+                    "Keygen: Look for 'CAT-' prefix",
+                    "Password: Starts with 'meow'"
+                ],
+                forensics: [
+                    "Check image metadata and hidden data"
+                ]
+            };
+            return hints[room] || [];
+        }
+
+        // ===== CONTROLS =====
         function setupControls() {
             document.addEventListener('keydown', onKeyDown);
             document.addEventListener('keyup', onKeyUp);
             document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('click', () => {
-                if (!isLocked) {
+
+            renderer.domElement.addEventListener('click', () => {
+                if (!uiInteractionMode && !isLocked) {
                     renderer.domElement.requestPointerLock();
                 }
             });
@@ -393,28 +740,46 @@
             document.addEventListener('pointerlockchange', () => {
                 isLocked = document.pointerLockElement === renderer.domElement;
             });
-
-            // Interaction key
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'e' || e.key === 'E') {
-                    checkInteraction();
-                } else if (e.key === 'Escape') {
-                    closePanel();
-                }
-            });
         }
 
-        function onKeyDown(event) {
-            switch (event.code) {
+        function onKeyDown(e) {
+            // Arrow Up key opens/closes panels
+            if (e.code === 'ArrowUp') {
+                if (currentPanel) {
+                    closePanel();
+                } else if (!uiInteractionMode) {
+                    checkInteraction();
+                }
+                e.preventDefault();
+                return;
+            }
+
+            // ESC toggles UI mode (doesn't close panels)
+            if (e.code === 'Escape') {
+                toggleUIMode();
+                return;
+            }
+
+            // Other keys only work in EXPLORE mode
+            if (uiInteractionMode) return;
+
+            switch (e.code) {
                 case 'KeyW': moveForward = true; break;
                 case 'KeyS': moveBackward = true; break;
                 case 'KeyA': moveLeft = true; break;
                 case 'KeyD': moveRight = true; break;
+                case 'Space':
+                    if (canJump) {
+                        velocity.y = JUMP_VELOCITY;
+                        canJump = false;
+                    }
+                    e.preventDefault();
+                    break;
             }
         }
 
-        function onKeyUp(event) {
-            switch (event.code) {
+        function onKeyUp(e) {
+            switch (e.code) {
                 case 'KeyW': moveForward = false; break;
                 case 'KeyS': moveBackward = false; break;
                 case 'KeyA': moveLeft = false; break;
@@ -422,359 +787,426 @@
             }
         }
 
-        function onMouseMove(event) {
-            if (!isLocked) return;
-
-            const movementX = event.movementX || 0;
-            const movementY = event.movementY || 0;
+        function onMouseMove(e) {
+            if (!isLocked || uiInteractionMode) return;
 
             euler.setFromQuaternion(camera.quaternion);
-            euler.y -= movementX * 0.002;
-            euler.x -= movementY * 0.002;
+            euler.y -= e.movementX * 0.002;
+            euler.x -= e.movementY * 0.002;
             euler.x = Math.max(-PI_2, Math.min(PI_2, euler.x));
             camera.quaternion.setFromEuler(euler);
         }
 
+        function toggleUIMode() {
+            uiInteractionMode = !uiInteractionMode;
+            document.getElementById('interaction-mode').textContent =
+                uiInteractionMode ? 'UI' : 'EXPLORE';
+
+            if (uiInteractionMode) {
+                document.exitPointerLock();
+                logTerminal('UI Mode: You can now interact with panels');
+            } else {
+                logTerminal('Explore Mode: Use WASD to move');
+                if (!currentPanel) {
+                    renderer.domElement.requestPointerLock();
+                }
+            }
+        }
+
+        // ===== INTERACTIONS =====
         function checkInteraction() {
             const raycaster = new THREE.Raycaster();
             raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
-
             const intersects = raycaster.intersectObjects(interactables);
 
             if (intersects.length > 0 && intersects[0].distance < 5) {
-                const object = intersects[0].object;
-                if (object.userData.interactable) {
-                    openChallenge(object.userData);
+                const obj = intersects[0].object;
+                const data = obj.userData;
+
+                if (data.isTerminal) {
+                    openChallenge(data);
+                } else if (data.isHint) {
+                    openHint(data);
+                } else if (data.isExitDoor) {
+                    teleportToLobby();
                 }
             }
         }
 
         function openChallenge(data) {
+            currentPanel = 'challenge';
             const panel = document.getElementById('interaction-panel');
-            const content = document.getElementById('panel-content');
-
-            content.innerHTML = getChallengeContent(data);
+            document.getElementById('panel-content').innerHTML = getChallengeContent(data);
             panel.style.display = 'block';
-
             document.getElementById('room-name').textContent = data.label;
         }
 
-        function getChallengeContent(data) {
-            const challenges = {
-                sql: `
-                    <h2>🐱 SQL Injection Challenge</h2>
-                    <p>The cat cafe login system has a vulnerability. Can you bypass the authentication?</p>
-                    <p><strong>Target:</strong> Login as 'admin'</p>
-                    <form onsubmit="submitWebChallenge(event, 'sql')">
-                        <input type="text" id="sql-username" placeholder="Username" required>
-                        <input type="text" id="sql-password" placeholder="Password" required>
-                        <button type="submit">Login</button>
-                    </form>
-                    <div id="sql-result"></div>
-                `,
-                xss: `
-                    <h2>🐱 XSS Challenge</h2>
-                    <p>Post a comment that executes JavaScript. Get the admin's cookie!</p>
-                    <form onsubmit="submitWebChallenge(event, 'xss')">
-                        <textarea id="xss-comment" placeholder="Your comment..." rows="4" required></textarea>
-                        <button type="submit">Post Comment</button>
-                    </form>
-                    <div id="xss-result"></div>
-                `,
-                traversal: `
-                    <h2>🐱 Directory Traversal</h2>
-                    <p>The file viewer has a path traversal vulnerability. Find the secret file!</p>
-                    <form onsubmit="submitWebChallenge(event, 'traversal')">
-                        <input type="text" id="traversal-path" placeholder="File path (e.g., ../secret.txt)" required>
-                        <button type="submit">View File</button>
-                    </form>
-                    <div id="traversal-result"></div>
-                `,
-                auth: `
-                    <h2>🐱 Auth Bypass</h2>
-                    <p>The admin panel checks cookies. Can you forge an admin session?</p>
-                    <form onsubmit="submitWebChallenge(event, 'auth')">
-                        <input type="text" id="auth-cookie" placeholder="Cookie value" required>
-                        <button type="submit">Access Admin</button>
-                    </form>
-                    <div id="auth-result"></div>
-                `,
-                cats: `
-                    <h2>🐱 Cat Database</h2>
-                    <p>Browse the cat database and find hidden information!</p>
-                    <button onclick="window.open('/cats', '_blank')">Open Cat Database</button>
-                    <p style="margin-top: 15px; color: #ff0;">Hint: Look for secret locations...</p>
-                `,
-                caesar: `
-                    <h2>🔐 Caesar Cipher</h2>
-                    <p>Encrypted message: <code>Wkh fdw klghv wkh nh|</code></p>
-                    <form onsubmit="submitCryptoChallenge(event, 'caesar')">
-                        <input type="text" id="caesar-answer" placeholder="Decrypted message" required>
-                        <button type="submit">Submit</button>
-                    </form>
-                    <div id="caesar-result"></div>
-                `,
-                hash: `
-                    <h2>🔐 Hash Cracking</h2>
-                    <p>Hash: <code>5f4dcc3b5aa765d61d8327deb882cf99</code></p>
-                    <p>This is an MD5 hash. What's the original password?</p>
-                    <form onsubmit="submitCryptoChallenge(event, 'hash')">
-                        <input type="text" id="hash-answer" placeholder="Original password" required>
-                        <button type="submit">Submit</button>
-                    </form>
-                    <div id="hash-result"></div>
-                `,
-                xor: `
-                    <h2>🔐 XOR Decryption</h2>
-                    <p>Encrypted (hex): <code>1a1b1c1d1e1f</code></p>
-                    <p>Key is a single byte. Find it and decrypt!</p>
-                    <form onsubmit="submitCryptoChallenge(event, 'xor')">
-                        <input type="text" id="xor-answer" placeholder="Decrypted message" required>
-                        <button type="submit">Submit</button>
-                    </form>
-                    <div id="xor-result"></div>
-                `,
-                rsa: `
-                    <h2>🔐 Weak RSA</h2>
-                    <p>n = 143, e = 7, c = 42</p>
-                    <p>The modulus is small. Factor it and decrypt!</p>
-                    <form onsubmit="submitCryptoChallenge(event, 'rsa')">
-                        <input type="number" id="rsa-answer" placeholder="Decrypted number" required>
-                        <button type="submit">Submit</button>
-                    </form>
-                    <div id="rsa-result"></div>
-                `,
-                base64: `
-                    <h2>🔐 Base64 Layers</h2>
-                    <p>Decode multiple layers: <code>Vm0wd2QyUXlVWGxWV0d4V1YwZDRWMVl3WkRSV01WbDNXa1JTVjAxV2JETlhhMUpUVmpBeFYySkVUbGhoTVVwVVZtcEJlRll5U2tWVQpiR2hvVFZWd1ZWWnRjRWRpYlZaSFdrVmFTMkpHU2xsWmJGWmhZMVpXY1ZOdFJtcE5WbkJZVmxjeGIxSkdXbFZpUjBacFUwVktSbFpYZUc5aQpNa1pIVld4YVRtSllRbUZXYlhCS1RWWnNWbFpzVWxwbGEzQklWbTAxVDJGV1NuUlZiR1JYVWpOb2RsWnFRbUZrUjA1R1UyeE9hbEpYCmVGaFVWM2hYWWtac05sSnNhR2hUUlVwWVdXeG9iMWRHV2xWaVJtaFdUVlp3V0ZaWE5VOGsKCg==</code></p>
-                    <form onsubmit="submitCryptoChallenge(event, 'base64')">
-                        <input type="text" id="base64-answer" placeholder="Final decoded message" required>
-                        <button type="submit">Submit</button>
-                    </form>
-                    <div id="base64-result"></div>
-                `,
-                buffer: `
-                    <h2>💥 Buffer Overflow</h2>
-                    <p>Find the buffer overflow in the binary and exploit it!</p>
-                    <p><code>./challenges/binary/challenge1</code></p>
-                    <form onsubmit="submitBinaryChallenge(event, 'buffer')">
-                        <input type="text" id="buffer-flag" placeholder="Enter flag" required>
-                        <button type="submit">Submit Flag</button>
-                    </form>
-                    <div id="buffer-result"></div>
-                `,
-                format: `
-                    <h2>💥 Format String</h2>
-                    <p>Exploit the format string vulnerability!</p>
-                    <p><code>./challenges/binary/challenge2</code></p>
-                    <form onsubmit="submitBinaryChallenge(event, 'format')">
-                        <input type="text" id="format-flag" placeholder="Enter flag" required>
-                        <button type="submit">Submit Flag</button>
-                    </form>
-                    <div id="format-result"></div>
-                `,
-                shellcode: `
-                    <h2>💥 Shellcode Injection</h2>
-                    <p>Inject and execute shellcode!</p>
-                    <p><code>./challenges/binary/challenge3</code></p>
-                    <form onsubmit="submitBinaryChallenge(event, 'shellcode')">
-                        <input type="text" id="shellcode-flag" placeholder="Enter flag" required>
-                        <button type="submit">Submit Flag</button>
-                    </form>
-                    <div id="shellcode-result"></div>
-                `,
-                keygen: `
-                    <h2>🔓 Keygen Challenge</h2>
-                    <p>Reverse engineer the key generation algorithm!</p>
-                    <p><code>./challenges/reverse/challenge1</code></p>
-                    <form onsubmit="submitReverseChallenge(event, 'keygen')">
-                        <input type="text" id="keygen-key" placeholder="Valid key" required>
-                        <button type="submit">Verify Key</button>
-                    </form>
-                    <div id="keygen-result"></div>
-                `,
-                password: `
-                    <h2>🔓 Password Check</h2>
-                    <p>Find the correct password by reversing the binary!</p>
-                    <p><code>./challenges/reverse/challenge2</code></p>
-                    <form onsubmit="submitReverseChallenge(event, 'password')">
-                        <input type="text" id="password-answer" placeholder="Password" required>
-                        <button type="submit">Check Password</button>
-                    </form>
-                    <div id="password-result"></div>
-                `,
-                photos: `
-                    <h2>📷 Cat Photo Forensics</h2>
-                    <p>Analyze the cat photos for hidden data!</p>
-                    <p>Check the forensics challenges directory...</p>
-                    <form onsubmit="submitForensicsChallenge(event, 'photos')">
-                        <input type="text" id="forensics-flag" placeholder="Enter flag" required>
-                        <button type="submit">Submit Flag</button>
-                    </form>
-                    <div id="forensics-result"></div>
-                `
-            };
-
-            return challenges[data.challengeId] || '<p>Challenge not found!</p>';
-        }
-
-        function submitWebChallenge(event, type) {
-            event.preventDefault();
-            let result;
-
-            switch(type) {
-                case 'sql':
-                    const username = document.getElementById('sql-username').value;
-                    const password = document.getElementById('sql-password').value;
-                    if (username.includes("'") || username.toLowerCase().includes('or')) {
-                        result = showSuccess('sql', 'FLAG{sql_1nj3ct10n_m4st3r}');
-                    } else {
-                        result = showError('sql', 'Invalid credentials. Try SQL injection!');
-                    }
-                    break;
-                case 'xss':
-                    const comment = document.getElementById('xss-comment').value;
-                    if (comment.includes('<script>') || comment.includes('onerror')) {
-                        result = showSuccess('xss', 'FLAG{xss_4tt4ck_succ3ss}');
-                    } else {
-                        result = showError('xss', 'Try injecting JavaScript!');
-                    }
-                    break;
-                case 'traversal':
-                    const path = document.getElementById('traversal-path').value;
-                    if (path.includes('..') || path.includes('secret')) {
-                        result = showSuccess('traversal', 'FLAG{tr4v3rs4l_m4st3r}');
-                    } else {
-                        result = showError('traversal', 'Try path traversal!');
-                    }
-                    break;
-                case 'auth':
-                    const cookie = document.getElementById('auth-cookie').value;
-                    if (cookie.toLowerCase().includes('admin')) {
-                        result = showSuccess('auth', 'FLAG{4uth_byp4ss3d}');
-                    } else {
-                        result = showError('auth', 'Try forging an admin cookie!');
-                    }
-                    break;
-            }
-
-            document.getElementById(type + '-result').innerHTML = result;
-        }
-
-        function submitCryptoChallenge(event, type) {
-            event.preventDefault();
-            let result;
-            const answers = {
-                'caesar': 'the cat hides the key',
-                'hash': 'password',
-                'xor': 'meowmeow',
-                'rsa': '2',
-                'base64': 'cats'
-            };
-
-            const input = document.getElementById(type + '-answer').value.toLowerCase();
-            if (input === answers[type] || input.includes(answers[type])) {
-                result = showSuccess(type, `FLAG{cry9t0_${type}_s0lv3d}`);
-            } else {
-                result = showError(type, 'Incorrect! Try again.');
-            }
-
-            document.getElementById(type + '-result').innerHTML = result;
-        }
-
-        function submitBinaryChallenge(event, type) {
-            event.preventDefault();
-            const input = document.getElementById(type + '-flag').value;
-            if (input.includes('FLAG{')) {
-                showSuccess(type, 'Flag accepted!');
-            } else {
-                showError(type, 'Incorrect flag!');
-            }
-            document.getElementById(type + '-result').innerHTML =
-                input.includes('FLAG{') ? showSuccess(type, 'Correct!') : showError(type, 'Try harder!');
-        }
-
-        function submitReverseChallenge(event, type) {
-            event.preventDefault();
-            const answers = {
-                'keygen': 'CAT-',
-                'password': 'meow'
-            };
-            const inputId = type === 'keygen' ? 'keygen-key' : 'password-answer';
-            const input = document.getElementById(inputId).value;
-
-            if (input.includes(answers[type])) {
-                document.getElementById(type + '-result').innerHTML =
-                    showSuccess(type, `FLAG{r3v3rs3_${type}_cr4ck3d}`);
-            } else {
-                document.getElementById(type + '-result').innerHTML =
-                    showError(type, 'Incorrect! Keep reversing!');
-            }
-        }
-
-        function submitForensicsChallenge(event, type) {
-            event.preventDefault();
-            const input = document.getElementById('forensics-flag').value;
-            document.getElementById('forensics-result').innerHTML =
-                input.includes('FLAG{') ? showSuccess(type, 'Correct!') : showError(type, 'Not quite!');
-        }
-
-        function showSuccess(type, flag) {
-            flagsFound.add(type);
-            document.getElementById('flag-count').textContent = flagsFound.size;
-            return `<div class="result-message success">✓ ${flag}</div>`;
-        }
-
-        function showError(type, message) {
-            return `<div class="result-message error">✗ ${message}</div>`;
+        function openHint(data) {
+            currentPanel = 'hint';
+            const panel = document.getElementById('interaction-panel');
+            document.getElementById('panel-content').innerHTML = `
+                <h2>💡 HINT</h2>
+                <div class="hint-text">${data.hintText}</div>
+                <button onclick="closePanel()">Close (↑)</button>
+            `;
+            panel.style.display = 'block';
         }
 
         function closePanel() {
             document.getElementById('interaction-panel').style.display = 'none';
-            document.getElementById('room-name').textContent = 'Main Hall';
+            document.getElementById('room-name').textContent = currentRoom.toUpperCase();
+            currentPanel = null;
         }
 
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+        function teleportToLobby() {
+            camera.position.set(0, 1.6, 0);
+            currentRoom = 'lobby';
+            document.getElementById('room-name').textContent = 'Lobby';
+            logTerminal('Returned to lobby');
         }
 
+        // ===== CHALLENGE CONTENT =====
+        function getChallengeContent(data) {
+            const challenges = {
+                sql: `<h2>SQL INJECTION</h2>
+                    <p>Bypass the login system</p>
+                    <div class="hint-text">Hint: Try ' OR '1'='1</div>
+                    <form onsubmit="submitChallenge(event, 'web', 'sql', 'sql-input')">
+                        <input type="text" id="sql-input" placeholder="SQL payload" required>
+                        <button type="submit">Submit</button>
+                    </form><div id="sql-result"></div>`,
+                xss: `<h2>XSS ATTACK</h2>
+                    <p>Inject JavaScript</p>
+                    <div class="hint-text">Hint: Use &lt;script&gt; tags</div>
+                    <form onsubmit="submitChallenge(event, 'web', 'xss', 'xss-input')">
+                        <textarea id="xss-input" placeholder="XSS payload" required></textarea>
+                        <button type="submit">Submit</button>
+                    </form><div id="xss-result"></div>`,
+                traversal: `<h2>DIRECTORY TRAVERSAL</h2>
+                    <p>Access secret files</p>
+                    <div class="hint-text">Hint: Use ../</div>
+                    <form onsubmit="submitChallenge(event, 'web', 'traversal', 'traversal-input')">
+                        <input type="text" id="traversal-input" placeholder="File path" required>
+                        <button type="submit">Submit</button>
+                    </form><div id="traversal-result"></div>`,
+                auth: `<h2>AUTH BYPASS</h2>
+                    <p>Forge admin cookie</p>
+                    <div class="hint-text">Hint: role=admin</div>
+                    <form onsubmit="submitChallenge(event, 'web', 'auth', 'auth-input')">
+                        <input type="text" id="auth-input" placeholder="Cookie value" required>
+                        <button type="submit">Submit</button>
+                    </form><div id="auth-result"></div>`,
+                cats: `<h2>CAT DATABASE</h2>
+                    <p>Find Mittens' location</p>
+                    <div class="hint-text">Hint: Look for secret_location</div>
+                    <form onsubmit="submitChallenge(event, 'web', 'cats', 'cats-input')">
+                        <input type="text" id="cats-input" placeholder="Where is Mittens?" required>
+                        <button type="submit">Submit</button>
+                    </form><div id="cats-result"></div>`,
+                caesar: `<h2>CAESAR CIPHER</h2>
+                    <p>Encrypted: Wkh fdw klghv wkh nh|</p>
+                    <div class="hint-text">Hint: Shift of 3</div>
+                    <form onsubmit="submitChallenge(event, 'crypto', 'caesar', 'caesar-input')">
+                        <input type="text" id="caesar-input" placeholder="Decrypted text" required>
+                        <button type="submit">Submit</button>
+                    </form><div id="caesar-result"></div>`,
+                hash: `<h2>HASH CRACKING</h2>
+                    <p>MD5: 5f4dcc3b5aa765d61d8327deb882cf99</p>
+                    <div class="hint-text">Hint: Common password</div>
+                    <form onsubmit="submitChallenge(event, 'crypto', 'hash', 'hash-input')">
+                        <input type="text" id="hash-input" placeholder="Password" required>
+                        <button type="submit">Submit</button>
+                    </form><div id="hash-result"></div>`,
+                xor: `<h2>XOR DECRYPTION</h2>
+                    <p>Hex: 1a1b1c1d1e1f (single byte key)</p>
+                    <div class="hint-text">Hint: Try all 256 keys</div>
+                    <form onsubmit="submitChallenge(event, 'crypto', 'xor', 'xor-input')">
+                        <input type="text" id="xor-input" placeholder="Decrypted text" required>
+                        <button type="submit">Submit</button>
+                    </form><div id="xor-result"></div>`,
+                rsa: `<h2>WEAK RSA</h2>
+                    <p>n=143, e=7, c=42</p>
+                    <div class="hint-text">Hint: Factor 143</div>
+                    <form onsubmit="submitChallenge(event, 'crypto', 'rsa', 'rsa-input')">
+                        <input type="number" id="rsa-input" placeholder="Decrypted number" required>
+                        <button type="submit">Submit</button>
+                    </form><div id="rsa-result"></div>`,
+                base64: `<h2>BASE64 LAYERS</h2>
+                    <p>Decode multiple times</p>
+                    <div class="hint-text">Hint: Decode recursively</div>
+                    <form onsubmit="submitChallenge(event, 'crypto', 'base64', 'base64-input')">
+                        <input type="text" id="base64-input" placeholder="Final result" required>
+                        <button type="submit">Submit</button>
+                    </form><div id="base64-result"></div>`,
+                buffer: `<h2>BUFFER OVERFLOW</h2>
+                    <p>Binary: challenges/binary/challenge1</p>
+                    <div class="hint-text">Hint: Overwrite return address</div>
+                    <form onsubmit="submitChallenge(event, 'binary', 'buffer', 'buffer-input')">
+                        <input type="text" id="buffer-input" placeholder="Flag" required>
+                        <button type="submit">Submit</button>
+                    </form><div id="buffer-result"></div>`,
+                format: `<h2>FORMAT STRING</h2>
+                    <p>Binary: challenges/binary/challenge2</p>
+                    <div class="hint-text">Hint: Use %x format specifiers</div>
+                    <form onsubmit="submitChallenge(event, 'binary', 'format', 'format-input')">
+                        <input type="text" id="format-input" placeholder="Flag" required>
+                        <button type="submit">Submit</button>
+                    </form><div id="format-result"></div>`,
+                shellcode: `<h2>SHELLCODE INJECTION</h2>
+                    <p>Binary: challenges/binary/challenge3</p>
+                    <div class="hint-text">Hint: Inject executable code</div>
+                    <form onsubmit="submitChallenge(event, 'binary', 'shellcode', 'shellcode-input')">
+                        <input type="text" id="shellcode-input" placeholder="Flag" required>
+                        <button type="submit">Submit</button>
+                    </form><div id="shellcode-result"></div>`,
+                keygen: `<h2>KEYGEN</h2>
+                    <p>Binary: challenges/reverse/challenge1</p>
+                    <div class="hint-text">Hint: Look for CAT- prefix</div>
+                    <form onsubmit="submitChallenge(event, 'reverse', 'keygen', 'keygen-input')">
+                        <input type="text" id="keygen-input" placeholder="Valid key" required>
+                        <button type="submit">Submit</button>
+                    </form><div id="keygen-result"></div>`,
+                password: `<h2>PASSWORD CHECK</h2>
+                    <p>Binary: challenges/reverse/challenge2</p>
+                    <div class="hint-text">Hint: Starts with meow</div>
+                    <form onsubmit="submitChallenge(event, 'reverse', 'password', 'password-input')">
+                        <input type="text" id="password-input" placeholder="Password" required>
+                        <button type="submit">Submit</button>
+                    </form><div id="password-result"></div>`,
+                photos: `<h2>CAT PHOTO FORENSICS</h2>
+                    <p>Check challenges/forensics/</p>
+                    <div class="hint-text">Hint: Check metadata and steganography</div>
+                    <form onsubmit="submitChallenge(event, 'forensics', 'photos', 'photos-input')">
+                        <input type="text" id="photos-input" placeholder="Flag" required>
+                        <button type="submit">Submit</button>
+                    </form><div id="photos-result"></div>`
+            };
+            return challenges[data.challengeId] || '<p>Challenge not found</p>';
+        }
+
+        // ===== CHALLENGE SUBMISSION =====
+        function submitChallenge(event, category, challengeId, inputId) {
+            event.preventDefault();
+            const input = document.getElementById(inputId).value.toLowerCase();
+            const answers = {
+                sql: ["'", 'or'],
+                xss: ['<script', 'onerror'],
+                traversal: ['..', 'secret'],
+                auth: ['admin'],
+                cats: ['ventilation', 'vent'],
+                caesar: ['the cat hides the key'],
+                hash: ['password'],
+                xor: ['meow'],
+                rsa: ['2'],
+                base64: ['cat'],
+                buffer: ['flag{'],
+                format: ['flag{'],
+                shellcode: ['flag{'],
+                keygen: ['cat-'],
+                password: ['meow'],
+                photos: ['flag{']
+            };
+
+            const correct = answers[challengeId].some(ans => input.includes(ans));
+            const resultDiv = document.getElementById(challengeId + '-result');
+
+            if (correct) {
+                const flag = `FLAG{${category}_${challengeId}_s0lv3d}`;
+                if (!flagsFound.has(challengeId)) {
+                    flagsFound.add(challengeId);
+                    roomCompletion[category]++;
+                    document.getElementById('flag-count').textContent = flagsFound.size;
+                    checkRoomCompletion(category);
+                }
+                resultDiv.innerHTML = `<div class="success">✓ Correct! ${flag}</div>`;
+                logTerminal(`Solved: ${challengeId}`);
+            } else {
+                resultDiv.innerHTML = `<div class="error">✗ Incorrect. Try again!</div>`;
+            }
+        }
+
+        function checkRoomCompletion(category) {
+            if (roomCompletion[category] >= roomRequirements[category]) {
+                logTerminal(`${category.toUpperCase()} room completed!`);
+
+                // Unlock the next room door in the lobby
+                doors.forEach(door => {
+                    if (door.userData.unlocksAfter === category && !door.userData.isOpen) {
+                        unlockDoor(door);
+                        logTerminal(`${door.userData.roomName.toUpperCase()} room unlocked!`);
+                    }
+                });
+            }
+        }
+
+        function unlockDoor(door) {
+            door.userData.isOpen = true;
+            door.material.color.setHex(door.userData.color);
+            door.material.emissive.setHex(door.userData.color);
+            door.material.emissiveIntensity = 0.3;
+            door.material.transparent = true;
+            door.material.opacity = 0.3;
+
+            const wallIndex = walls.indexOf(door);
+            if (wallIndex > -1) walls.splice(wallIndex, 1);
+
+            updateDoorLabel(door, door.userData.roomName, true);
+        }
+
+        function updateDoorLabel(door, roomName, isOpen) {
+            if (door.userData.label) {
+                scene.remove(door.userData.label);
+            }
+            addDoorLabel(door, roomName, isOpen, door.userData.orientation);
+        }
+
+        // ===== TERMINAL =====
+        function setupTerminal() {
+            const terminal = document.getElementById('terminal');
+            const input = document.getElementById('terminal-input');
+
+            // Make terminal draggable
+            let isDragging = false, offsetX, offsetY;
+
+            terminal.querySelector('#terminal-header').addEventListener('mousedown', (e) => {
+                isDragging = true;
+                offsetX = e.clientX - terminal.offsetLeft;
+                offsetY = e.clientY - terminal.offsetTop;
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    terminal.style.left = (e.clientX - offsetX) + 'px';
+                    terminal.style.top = (e.clientY - offsetY) + 'px';
+                    terminal.style.right = 'auto';
+                    terminal.style.bottom = 'auto';
+                }
+            });
+
+            document.addEventListener('mouseup', () => { isDragging = false; });
+
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const cmd = input.value.trim();
+                    if (cmd) handleTerminalCommand(cmd);
+                    input.value = '';
+                }
+            });
+        }
+
+        function handleTerminalCommand(cmd) {
+            logTerminal('> ' + cmd);
+
+            if (cmd === 'help') {
+                logTerminal('Commands: help, status, flags, rooms, clear');
+            } else if (cmd === 'status') {
+                logTerminal(`Room: ${currentRoom}, Flags: ${flagsFound.size}/16`);
+            } else if (cmd === 'flags') {
+                logTerminal(`Found flags: ${Array.from(flagsFound).join(', ')}`);
+            } else if (cmd === 'rooms') {
+                Object.keys(roomCompletion).forEach(room => {
+                    const done = roomCompletion[room];
+                    const total = roomRequirements[room];
+                    logTerminal(`${room}: ${done}/${total}`);
+                });
+            } else if (cmd === 'clear') {
+                document.getElementById('terminal-output').innerHTML = '';
+            } else {
+                logTerminal('Unknown command. Type "help"');
+            }
+        }
+
+        function logTerminal(msg) {
+            const output = document.getElementById('terminal-output');
+            output.innerHTML += msg + '<br>';
+            output.scrollTop = output.scrollHeight;
+        }
+
+        // ===== ANIMATION LOOP =====
         function animate() {
             requestAnimationFrame(animate);
 
             const time = performance.now();
             const delta = (time - prevTime) / 1000;
 
-            velocity.x -= velocity.x * 10.0 * delta;
-            velocity.z -= velocity.z * 10.0 * delta;
+            if (!uiInteractionMode) {
+                // Apply gravity
+                velocity.y -= GRAVITY * delta;
 
-            direction.z = Number(moveForward) - Number(moveBackward);
-            direction.x = Number(moveRight) - Number(moveLeft);
-            direction.normalize();
+                // Get camera direction vectors
+                const forward = new THREE.Vector3();
+                camera.getWorldDirection(forward);
+                forward.y = 0;
+                forward.normalize();
 
-            if (moveForward || moveBackward) velocity.z -= direction.z * 30.0 * delta;
-            if (moveLeft || moveRight) velocity.x -= direction.x * 30.0 * delta;
+                const right = new THREE.Vector3();
+                right.crossVectors(forward, camera.up);
 
-            const forward = new THREE.Vector3();
-            camera.getWorldDirection(forward);
-            forward.y = 0;
-            forward.normalize();
+                // New position based on WASD keys
+                const newPos = camera.position.clone();
+                const moveSpeed = 10 * delta;
 
-            const right = new THREE.Vector3();
-            right.crossVectors(forward, camera.up);
+                if (moveForward) newPos.addScaledVector(forward, moveSpeed);
+                if (moveBackward) newPos.addScaledVector(forward, -moveSpeed);
+                if (moveLeft) newPos.addScaledVector(right, -moveSpeed);
+                if (moveRight) newPos.addScaledVector(right, moveSpeed);
 
-            camera.position.addScaledVector(forward, -velocity.z * delta);
-            camera.position.addScaledVector(right, -velocity.x * delta);
+                newPos.y = camera.position.y + velocity.y * delta;
 
-            // Keep player in bounds
-            camera.position.x = Math.max(-28, Math.min(28, camera.position.x));
-            camera.position.z = Math.max(-28, Math.min(28, camera.position.z));
-            camera.position.y = 1.6;
+                // Collision detection
+                if (!checkCollision(newPos)) {
+                    camera.position.copy(newPos);
+                }
+
+                // Floor collision
+                if (camera.position.y <= 1.6) {
+                    camera.position.y = 1.6;
+                    velocity.y = 0;
+                    canJump = true;
+                }
+
+                // Check for door transitions
+                checkDoorTransitions();
+            }
 
             prevTime = time;
-
             renderer.render(scene, camera);
+        }
+
+        function checkCollision(pos) {
+            const playerBox = new THREE.Box3(
+                new THREE.Vector3(pos.x - 0.5, pos.y - 1.6, pos.z - 0.5),
+                new THREE.Vector3(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5)
+            );
+
+            for (let wall of walls) {
+                const wallBox = new THREE.Box3().setFromObject(wall);
+                if (playerBox.intersectsBox(wallBox)) return true;
+            }
+            return false;
+        }
+
+        function checkDoorTransitions() {
+            doors.forEach(door => {
+                if (door.userData.isOpen) {
+                    const dist = camera.position.distanceTo(door.position);
+                    if (dist < 2 && currentRoom === 'lobby') {
+                        // Teleport to room
+                        const offset = roomOffsets[door.userData.roomName];
+                        camera.position.set(offset.x, 1.6, offset.z + 10);
+                        currentRoom = door.userData.roomName;
+                        document.getElementById('room-name').textContent =
+                            door.userData.roomName.toUpperCase();
+                        logTerminal(`Entered ${door.userData.roomName} room`);
+                    }
+                }
+            });
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
         }
     </script>
 </body>
